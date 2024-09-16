@@ -1,3 +1,8 @@
+"""Source:
+
+https://github.com/ml-explore/mlx-examples/blob/main/bert/test.py
+"""
+
 import argparse
 from typing import List
 
@@ -43,7 +48,8 @@ if __name__ == "__main__":
 
     torch_output, torch_pooled = run_torch(args.bert_model, args.text)
 
-    mlx_output, mlx_pooled = model.run(args.bert_model, args.mlx_model, args.text)
+    mlx_output, mlx_pooled = model.run(
+        args.bert_model, args.mlx_model, args.text)
 
     if torch_pooled is not None and mlx_pooled is not None:
         assert np.allclose(
