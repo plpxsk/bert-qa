@@ -1,0 +1,5 @@
+torch
+evaluate
+transformers[torch]
+
+pytest
