@@ -5,3 +5,6 @@ extras:
 	PYTHONPATH=. python extra/inference_hf
 	PYTHONPATH=. python extra/inference_pt.py
 
+test:
+	PYTHONPATH=. pytest
+	PYTHONPATH=. python tests/test_compare_hf.py

@@ -10,4 +10,8 @@ Bert fine-tuning for Q&A with squad dataset:
 
 # Run
 
-For code scripts, [Makefile](Makefile).
+For code scripts, see [Makefile](Makefile).
+
+# Test
+
+Run some tests with `make test` per Makefile
