@@ -117,6 +117,15 @@ class Bert(nn.Module):
         return y, mx.tanh(self.pooler(y[:, 0]))
 
 
+# PAUL ADD
+class BertQA(Bert):
+    def __init__(self, config):
+        super().__init__(config)
+
+    def __call__(self):
+        pass
+
+
 def load_model(
     bert_model: str, weights_path: str
 ) -> Tuple[Bert, PreTrainedTokenizerBase]:
