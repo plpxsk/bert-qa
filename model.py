@@ -61,7 +61,8 @@ class TransformerEncoder(nn.Module):
 class BertEmbeddings(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.word_embeddings = nn.Embedding(config.vocab_size, config.hidden_size)
+        self.word_embeddings = nn.Embedding(
+            config.vocab_size, config.hidden_size)
         self.token_type_embeddings = nn.Embedding(
             config.type_vocab_size, config.hidden_size
         )
@@ -89,7 +90,7 @@ class BertEmbeddings(nn.Module):
 
 
 class Bert(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, add_pooler):
         super().__init__()
         self.embeddings = BertEmbeddings(config)
         self.encoder = TransformerEncoder(
@@ -98,13 +99,14 @@ class Bert(nn.Module):
             num_heads=config.num_attention_heads,
             mlp_dims=config.intermediate_size,
         )
-        self.pooler = nn.Linear(config.hidden_size, config.hidden_size)
+        self.pooler = nn.Linear(
+            config.hidden_size, config.hidden_size) if add_pooler else None
 
     def __call__(
         self,
         input_ids: mx.array,
         token_type_ids: mx.array = None,
-        attention_mask: mx.array = None,
+        attention_mask: mx.array = None
     ) -> Tuple[mx.array, mx.array]:
         x = self.embeddings(input_ids, token_type_ids)
 
@@ -114,16 +116,78 @@ class Bert(nn.Module):
             attention_mask = mx.expand_dims(attention_mask, (1, 2))
 
         y = self.encoder(x, attention_mask)
-        return y, mx.tanh(self.pooler(y[:, 0]))
+        if self.pooler is not None:
+            return y, mx.tanh(self.pooler(y[:, 0]))
+        else:
+            return y
 
 
-# PAUL ADD
-class BertQA(Bert):
+class BertQA(nn.Module):
     def __init__(self, config):
-        super().__init__(config)
+        super().__init__()
+        self.model = Bert(config, add_pooler=False)
+        self.qa_output = nn.Linear(config.hidden_size, config.num_labels)
+        self.num_labels = config.num_labels
 
-    def __call__(self):
-        pass
+        # TODO: factor this out? no strict?
+    def load_weights2(self, path: str):
+        # strict=False to omit loading pooler.bias, pooler.weight
+        self.model.load_weights(path, strict=False)
+
+    def __call__(
+            self,
+            input_ids: mx.array,
+            token_type_ids: mx.array,
+            attention_mask: mx.array,
+            start_positions: mx.array,
+            end_positions: mx.array
+        # TODO return type?
+    ) -> Tuple[mx.array, mx.array]:
+
+        # 1 batch is first dimension. shape: (1, 13, 768)...
+        outputs = self.model(
+            input_ids=input_ids,
+            token_type_ids=token_type_ids,
+            attention_mask=attention_mask
+        )
+
+        # # TODO check argument 0
+        # sequence_output = outputs[0]
+
+        # ... so take the only batch
+        sequence_output = outputs[0]
+
+        # NEXT: continue here
+        # use ipynb notebook for outputs
+
+        logits = self.qa_output(sequence_output)
+        # start_logits, end_logits = logits.split(1, dim=-1)
+        # start_logits = start_logits.squeeze(-1)
+        # end_logits = end_logits.squeeze(-1)
+
+        return outputs, logits
+
+        # total_loss = None
+        # if start_positions is not None and end_positions is not None:
+        #     # # If we are on multi-GPU, split add a dimension
+        #     # if len(start_positions.size()) > 1:
+        #     #     start_positions = start_positions.squeeze(-1)
+        #     # if len(end_positions.size()) > 1:
+        #     #     end_positions = end_positions.squeeze(-1)
+
+        #     # # sometimes the start/end positions are outside our model inputs, we ignore these terms
+        #     # ignored_index = start_logits.size(1)
+        #     # start_positions = start_positions.clamp(0, ignored_index)
+        #     # end_positions = end_positions.clamp(0, ignored_index)
+
+        #     loss_fn = nn.losses.cross_entropy()
+        #     start_loss = loss_fn(start_logits, start_positions)
+        #     end_loss = loss_fn(end_logits, end_positions)
+        #     total_loss = (start_loss + end_loss) / 2
+
+        # # TODO check argument 2:
+        # output = (start_logits, end_logits) + outputs[2:]
+        # return ((total_loss,) + output)
 
 
 def load_model(
@@ -146,14 +210,14 @@ def load_model(
 def run(bert_model: str, mlx_model: str, batch: List[str]):
     model, tokenizer = load_model(bert_model, mlx_model)
 
-    tokens = tokenizer(batch, return_tensors="np", padding=True)
-    tokens = {key: mx.array(v) for key, v in tokens.items()}
+    tokens = tokenizer(batch, return_tensors="mlx", padding=True)
 
     return model(**tokens)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run the BERT model using MLX.")
+    parser = argparse.ArgumentParser(
+        description="Run the BERT model using MLX.")
     parser.add_argument(
         "--bert-model",
         type=str,

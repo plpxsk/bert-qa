@@ -4,10 +4,13 @@ def load_model_tokenizer_hf(model_str: str = "bert-base-uncased", hf_auto_class=
 
     if hf_auto_class == "AutoModel":
         from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+        # AutoModelForQuestionAnswering just selects BertForQuestionAnswering
+        # anyway
         model = AutoModelForQuestionAnswering.from_pretrained(model_str)
         tokenizer = AutoTokenizer.from_pretrained(model_str)
     elif hf_auto_class == "Bert":
         from transformers import BertTokenizerFast, BertForQuestionAnswering
+        # https://huggingface.co/docs/transformers/v4.44.2/en/model_doc/bert#transformers.BertForQuestionAnswering
         model = BertForQuestionAnswering.from_pretrained(model_str)
         tokenizer = BertTokenizerFast.from_pretrained(model_str)
 

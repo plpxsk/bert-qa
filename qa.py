@@ -7,29 +7,40 @@ def batch_iterate(examples, batch_size):
 
 
 def main():
-    from model import load_model
+    import mlx.core as mx
     import mlx.optimizers as optim
+
+    from model import BertQA
+    from utils import load_squad, preprocess_tokenize_function
 
     print("train or inference using this script")
     print("Follow SETUP IN mlx-examples/lora")
 
     bert_model = "bert-base-uncased"
     mlx_weights_path = "weights/bert-base-uncased.npz"
-    model, tokenizer = load_model(bert_model, mlx_weights_path)
+    # follow load_model explicitly for BertQA
+    # model, tokenizer = load_model(bert_model, mlx_weights_path)
+    config = AutoConfig.from_pretrained(bert_model)
+    model = BertQA(config)
+    model.load_weights2(mlx_weights_path)
 
-    batch = ["This is an example of BERT working on MLX."]
-    tokens = tokenizer(batch, return_tensors="mlx", padding=True)
+    tokenizer = AutoTokenizer.from_pretrained(bert_model)
 
-    output, pooled = model(**tokens)
+    # # for Bert()
+    # batch = ["This is an example of BERT working on MLX."]
+    # tokens = tokenizer(batch, return_tensors="mlx", padding=True)
+    # output, pooled = model(**tokens)
 
     squad = load_squad(filter_size=100, torch=False)
 
     # CONTINUE
     max_length = tokenizer.model_max_length
+    # NOTE: mlx kind. UPDATE: no
     args_dict = dict(tokenizer=tokenizer, tensors_kind=None,
                      max_length=max_length)
 
-    squad_tokenized = squad.map(preprocess_tokenize_function, batched=True,
+    # batched=False for mlx tensors_kind
+    squad_tokenized = squad.map(preprocess_tokenize_function, batched=False,
                                 remove_columns=squad["train"].column_names,
                                 fn_kwargs=args_dict)
 
@@ -78,15 +89,26 @@ def main():
             # attention_mask = batch['attention_mask'].to(device)
             # start_positions = batch['start_positions'].to(device)
             # end_positions = batch['end_positions'].to(device)
-            input_ids = batch['input_ids']
-            attention_mask = batch['attention_mask']
+
+            # TODO: mx.array() in preprocess_tokenize_function() ????
+            input_ids = mx.array(batch['input_ids'])
+            input_ids = mx.expand_dims(input_ids, 0)
+
+            token_type_ids = mx.array(batch['token_type_ids'])
+            token_type_ids = mx.expand_dims(token_type_ids, 0)
+
+            attention_mask = mx.array(batch['attention_mask'])
+            attention_mask = mx.expand_dims(attention_mask, 0)
+
             start_positions = batch['start_positions']
             end_positions = batch['end_positions']
 
-            outputs = model(input_ids, attention_mask=attention_mask,
-                            start_positions=start_positions, end_positions=end_positions)
+            outputs, logits = model(input_ids=input_ids, token_type_ids=token_type_ids,
+                                    attention_mask=attention_mask,
+                                    start_positions=start_positions,
+                                    end_positions=end_positions)
 
-            # loss = outputs[0]
+            # loss from nn.value_and_grad() or similar??
             loss = outputs["loss"]
 
             optimizer.zero_grad()
