@@ -1,90 +1,107 @@
-def batch_iterate(examples, batch_size):
-    perm = np.random.default_rng(12345).permutation(len(examples))
-    perm = mx.array(perm)
-    for s in range(0, len(examples), batch_size):
+from functools import partial
+import mlx.core as mx
+import mlx.nn as nn
+
+
+def batch_iterate(dataset, batch_size):
+    # try to get rid of this dep
+    import numpy as np
+
+    perm = np.random.default_rng(12345).permutation(len(dataset))
+    # # do not use this??
+    # # it won't work at least in juypyter because need ids[iter].item()
+    # perm = mx.array(perm)
+    for s in range(0, len(dataset), batch_size):
         ids = perm[s: s + batch_size]
-        yield examples[ids]
+        yield dataset[ids]
+
+
+def loss_fn(model, input_ids, token_type_ids, attention_mask, start_positions,
+            end_positions, reduce=True):
+    start_logits, end_logits = model(
+        input_ids=input_ids,
+        token_type_ids=token_type_ids,
+        attention_mask=attention_mask,
+        start_positions=start_positions,
+        end_positions=end_positions)
+    slosses = nn.losses.cross_entropy(start_logits, start_positions)
+    elosses = nn.losses.cross_entropy(end_logits, end_positions)
+    if reduce:
+        slosses = mx.mean(slosses)
+        elosses = mx.mean(elosses)
+    loss = (slosses + elosses) / 2
+    return loss
+
+
+# TODO review this
+def eval_fn(dataset, model, batch_size=8):
+    loss = 0
+    # refactor with batch_iterate?
+    for s in range(0, len(dataset), batch_size):
+        batch = dataset[s: s + batch_size]
+        input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
+            mx.array,
+            (batch['input_ids'], batch['token_type_ids'], batch['attention_mask'],
+             batch['start_positions'], batch['end_positions'])
+        )
+        losses = loss_fn(model, input_ids, token_type_ids, attention_mask,
+                         start_positions, end_positions, reduce=False)
+        loss += mx.sum(losses).item()
+    return loss / len(dataset)
+
+
+def load_model_tokenizer(hf_model: str, mlx_weights_path: str = "weights/bert-base-uncased.npz"):
+    from transformers import AutoConfig, AutoTokenizer
+    from model_mlx import BertQA
+
+    tokenizer = AutoTokenizer.from_pretrained(hf_model)
+    config = AutoConfig.from_pretrained(hf_model)
+
+    model = BertQA(config)
+    model.load_weights2(mlx_weights_path)
+
+    return model, tokenizer
 
 
 def main():
-    import mlx.core as mx
     import mlx.optimizers as optim
-
-    from model import BertQA
-    from utils import load_squad, preprocess_tokenize_function
+    from utils import load_processed_datasets
 
     print("train or inference using this script")
     print("Follow SETUP IN mlx-examples/lora")
 
     bert_model = "bert-base-uncased"
     mlx_weights_path = "weights/bert-base-uncased.npz"
-    # follow load_model explicitly for BertQA
-    # model, tokenizer = load_model(bert_model, mlx_weights_path)
-    config = AutoConfig.from_pretrained(bert_model)
-    model = BertQA(config)
-    model.load_weights2(mlx_weights_path)
+    model, tokenizer = load_model_tokenizer(hf_model=bert_model,
+                                            mlx_weights_path=mlx_weights_path)
 
-    tokenizer = AutoTokenizer.from_pretrained(bert_model)
+    train_ds, valid_ds, test_ds = load_processed_datasets(
+        filter_size=100, model_max_length=tokenizer.model_max_length,
+        tokenizer=tokenizer)
 
-    # # for Bert()
-    # batch = ["This is an example of BERT working on MLX."]
-    # tokens = tokenizer(batch, return_tensors="mlx", padding=True)
-    # output, pooled = model(**tokens)
+    @partial(mx.compile, inputs=state, outputs=state)
+    def step(input_ids, token_type_ids, attention_mask, start_positions, end_positions):
+        loss_and_grad_fn = nn.value_and_grad(model, loss_fn)
+        loss, grads = loss_and_grad_fn(
+            model, input_ids, token_type_ids, attention_mask, start_positions, end_positions)
+        optimizer.update(model, grads)
+    return loss
 
-    squad = load_squad(filter_size=100, torch=False)
-
-    # CONTINUE
-    max_length = tokenizer.model_max_length
-    # NOTE: mlx kind. UPDATE: no
-    args_dict = dict(tokenizer=tokenizer, tensors_kind=None,
-                     max_length=max_length)
-
-    # batched=False for mlx tensors_kind
-    squad_tokenized = squad.map(preprocess_tokenize_function, batched=False,
-                                remove_columns=squad["train"].column_names,
-                                fn_kwargs=args_dict)
-
-    train_ds = squad_tokenized["train"]
-    valid_ds = squad_tokenized["valid"]
-    test_ds = squad_tokenized["test"]
-
-    # train_dataloader = torch.utils.data.DataLoader(
-    #     tokenized_squad['train'], batch_size=16, shuffle=True)
-    # valid_dataloader = torch.utils.data.DataLoader(
-    #     tokenized_squad['valid'], batch_size=64)
-    # test_dataloader = torch.utils.data.DataLoader(
-    #     tokenized_squad['test'], batch_size=64)
-
-    # Define the optimizer
-    # optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
     optimizer = optim.AdamW(learning_rate=1e-5)
 
-    # pytorch
-    # device = torch.device("mps")
-    # model.to(device)
-
-    # right?
-    # following https://ml-explore.github.io/mlx/build/html/examples/mlp.html
     mx.eval(model.parameters())
-
-    # NEXT
-    # batch = train_ds[2]
-    # run code line by line...
-    # ... need to implement BertQA():
-    # outputs = model(input_ids, attention_mask=attention_mask,
-    # ...                             start_positions=start_positions, end_positions=end_positions)
-
-    # Traceback (most recent call last):
-    #   File "/Users/paul/github/qa/qa.py", line 73, in <module>
-    #     end_positions = batch['end_positions'].to(device)
-    #   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    # TypeError: Bert.__call__() got an unexpected keyword argument 'start_positions'
+    loss_and_grad_fn = nn.value_and_grad(model, loss_fn)
 
     for epoch in range(n_epoch):
         print(f"Training for epoch {epoch+1}...")
         # model.train()
         # for batch in train_dataloader:
+
         for batch in batch_iterate(train_ds, batch_size=16):
+            print(len(batch['input_ids']))
+
+            batch = next(iter(batch_iterate(train_ds, batch_size=16)))
+
             # input_ids = batch['input_ids'].to(device)
             # attention_mask = batch['attention_mask'].to(device)
             # start_positions = batch['start_positions'].to(device)
@@ -92,21 +109,36 @@ def main():
 
             # TODO: mx.array() in preprocess_tokenize_function() ????
             input_ids = mx.array(batch['input_ids'])
-            input_ids = mx.expand_dims(input_ids, 0)
+            # input_ids = mx.expand_dims(input_ids, 0)
 
             token_type_ids = mx.array(batch['token_type_ids'])
-            token_type_ids = mx.expand_dims(token_type_ids, 0)
+            # token_type_ids = mx.expand_dims(token_type_ids, 0)
 
             attention_mask = mx.array(batch['attention_mask'])
-            attention_mask = mx.expand_dims(attention_mask, 0)
+            # attention_mask = mx.expand_dims(attention_mask, 0)
 
-            start_positions = batch['start_positions']
-            end_positions = batch['end_positions']
+            start_positions = mx.array(batch['start_positions'])
 
-            outputs, logits = model(input_ids=input_ids, token_type_ids=token_type_ids,
-                                    attention_mask=attention_mask,
-                                    start_positions=start_positions,
-                                    end_positions=end_positions)
+            end_positions = mx.array(batch['end_positions'])
+
+            outputs, start_logits, end_logits = model(input_ids=input_ids,
+                                                      token_type_ids=token_type_ids,
+                                                      attention_mask=attention_mask,
+                                                      start_positions=start_positions,
+                                                      end_positions=end_positions)
+
+            # NEXT: continue here
+            # NEXT: MODULARIZE so I can use in Notebook
+
+            # use ipynb notebook for outputs
+
+            start_loss = loss_fn(start_logits, start_positions)
+            end_loss = loss_fn(end_logits, end_positions)
+            total_loss = (start_loss + end_loss) / 2
+            # # TODO
+            loss, _ = loss_and_grad_fn(
+                start_logits, end_logits, start_positions, end_positions)
+            # end_loss, _ = loss_and_grad_fn(end_logits, end_positions)
 
             # loss from nn.value_and_grad() or similar??
             loss = outputs["loss"]
@@ -168,14 +200,6 @@ def main():
     if args.inference:
         context, question = context, question
         run()
-
-
-def train():
-    pass
-
-
-def evaluate():
-    pass
 
 
 def build_parser():

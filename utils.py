@@ -43,6 +43,25 @@ def load_squad(filter_size=500, test_valid_size=0.2, test_size=0.5, torch=False)
     return squad
 
 
+def load_processed_datasets(filter_size, model_max_length, tokenizer):
+    squad = load_squad(filter_size=filter_size, torch=False)
+
+    # NOTE: mlx kind. UPDATE: no
+    args_dict = dict(tokenizer=tokenizer, tensors_kind=None,
+                     max_length=model_max_length)
+
+    # batched=False for mlx tensors_kind
+    squad_tokenized = squad.map(preprocess_tokenize_function, batched=True,
+                                remove_columns=squad["train"].column_names,
+                                fn_kwargs=args_dict)
+
+    train = squad_tokenized["train"]
+    valid = squad_tokenized["valid"]
+    test = squad_tokenized["test"]
+
+    return train, valid, test
+
+
 def find_context_start_end(sequence_ids):
     idx = 0
     while sequence_ids[idx] != 1:

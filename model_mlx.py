@@ -144,7 +144,7 @@ class BertQA(nn.Module):
         # TODO return type?
     ) -> Tuple[mx.array, mx.array]:
 
-        # 1 batch is first dimension. shape: (1, 13, 768)...
+        # if batch_size = 16 then shape of input_ids is like: (16, 512, 768)
         outputs = self.model(
             input_ids=input_ids,
             token_type_ids=token_type_ids,
@@ -153,37 +153,40 @@ class BertQA(nn.Module):
 
         # # TODO check argument 0
         # sequence_output = outputs[0]
+        # # ... so take the only batch
 
-        # ... so take the only batch
-        sequence_output = outputs[0]
+        logits = self.qa_output(outputs)
 
-        # NEXT: continue here
-        # use ipynb notebook for outputs
-
-        logits = self.qa_output(sequence_output)
         # start_logits, end_logits = logits.split(1, dim=-1)
-        # start_logits = start_logits.squeeze(-1)
-        # end_logits = end_logits.squeeze(-1)
+        start_logits, end_logits = mx.split(logits, 2, axis=-1)
+        start_logits = start_logits.squeeze(-1)
+        end_logits = end_logits.squeeze(-1)
 
-        return outputs, logits
+        # do I need outputs??
+        # return outputs, start_logits, end_logits
+        return start_logits, end_logits
 
-        # total_loss = None
-        # if start_positions is not None and end_positions is not None:
-        #     # # If we are on multi-GPU, split add a dimension
-        #     # if len(start_positions.size()) > 1:
-        #     #     start_positions = start_positions.squeeze(-1)
-        #     # if len(end_positions.size()) > 1:
-        #     #     end_positions = end_positions.squeeze(-1)
 
-        #     # # sometimes the start/end positions are outside our model inputs, we ignore these terms
-        #     # ignored_index = start_logits.size(1)
-        #     # start_positions = start_positions.clamp(0, ignored_index)
-        #     # end_positions = end_positions.clamp(0, ignored_index)
+def tmp():
+    def tmp():
+        # NEXT: take this into qa.py with loss_fn()
+        total_loss = None
+        if start_positions is not None and end_positions is not None:
+            # # If we are on multi-GPU, split add a dimension
+            # if len(start_positions.size()) > 1:
+            #     start_positions = start_positions.squeeze(-1)
+            # if len(end_positions.size()) > 1:
+            #     end_positions = end_positions.squeeze(-1)
 
-        #     loss_fn = nn.losses.cross_entropy()
-        #     start_loss = loss_fn(start_logits, start_positions)
-        #     end_loss = loss_fn(end_logits, end_positions)
-        #     total_loss = (start_loss + end_loss) / 2
+            # # sometimes the start/end positions are outside our model inputs, we ignore these terms
+            # ignored_index = start_logits.size(1)
+            # start_positions = start_positions.clamp(0, ignored_index)
+            # end_positions = end_positions.clamp(0, ignored_index)
+
+            loss_fn = nn.losses.cross_entropy()
+            start_loss = loss_fn(start_logits, start_positions)
+            end_loss = loss_fn(end_logits, end_positions)
+            total_loss = (start_loss + end_loss) / 2
 
         # # TODO check argument 2:
         # output = (start_logits, end_logits) + outputs[2:]
