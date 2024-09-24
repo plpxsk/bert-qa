@@ -117,9 +117,7 @@ def loss_fn(model, input_ids, token_type_ids, attention_mask, start_positions,
     start_logits, end_logits = model(
         input_ids=input_ids,
         token_type_ids=token_type_ids,
-        attention_mask=attention_mask,
-        start_positions=start_positions,
-        end_positions=end_positions)
+        attention_mask=attention_mask)
     slosses = nn.losses.cross_entropy(start_logits, start_positions)
     elosses = nn.losses.cross_entropy(end_logits, end_positions)
     if reduce:

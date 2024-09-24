@@ -138,9 +138,7 @@ class BertQA(nn.Module):
             self,
             input_ids: mx.array,
             token_type_ids: mx.array,
-            attention_mask: mx.array,
-            start_positions: mx.array,
-            end_positions: mx.array
+            attention_mask: mx.array
         # TODO return type?
     ) -> Tuple[mx.array, mx.array]:
 
