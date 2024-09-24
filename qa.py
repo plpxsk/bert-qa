@@ -8,13 +8,14 @@ import logging
 import mlx.core as mx
 import mlx.nn as nn
 import mlx.optimizers as optim
+from mlx.utils import tree_flatten
 
 from utils import load_processed_datasets
 
 
 def main(args):
-    model, tokenizer = load_model_tokenizer(hf_model=args.model_str,
-                                            mlx_weights_path=args.mlx_weights)
+    model, tokenizer = load_model_tokenizer(
+        hf_model=args.model_str, weights_pretrain_path=args.load_weights)
 
     train_ds, valid_ds, test_ds = load_processed_datasets(
         filter_size=args.dataset_size, model_max_length=tokenizer.model_max_length,
@@ -34,9 +35,8 @@ def main(args):
     def step(input_ids, token_type_ids, attention_mask, start_positions,
              end_positions):
         loss_and_grad_fn = nn.value_and_grad(model, loss_fn)
-        loss, grads = loss_and_grad_fn(
-            model, input_ids, token_type_ids, attention_mask, start_positions,
-            end_positions)
+        loss, grads = loss_and_grad_fn(model, input_ids, token_type_ids, attention_mask,
+                                       start_positions, end_positions)
         optimizer.update(model, grads)
         return loss
 
@@ -52,8 +52,7 @@ def main(args):
              batch['start_positions'], batch['end_positions'])
         )
 
-        loss = step(input_ids, token_type_ids, attention_mask,
-                    start_positions, end_positions)
+        loss = step(input_ids, token_type_ids, attention_mask, start_positions, end_positions)
 
         mx.eval(state)
         losses.append(loss.item())
@@ -68,7 +67,7 @@ def main(args):
             losses = []
             tic = time.perf_counter()
         if (it + 1) % args.steps_per_eval == 0:
-            logging.info("Checking val_loss...")
+            logging.info("Checking validation loss...")
             val_loss = eval_fn(valid_ds, model, batch_size=args.batch_size)
             toc = time.perf_counter()
             print(
@@ -79,20 +78,24 @@ def main(args):
             )
             tic = time.perf_counter()
 
-    # TODO
-    # Check test score at end of training
-
     # if args.train:
     #     opt = opt
     #     train()
     #     mx.savez(save_file)
 
-    # if args.test:
-    #     model.eval()
-    #     test_loss = test_loss
-    #     test_ppl = test_ppl
+    tic = time.perf_counter()
+    if args.test:
+        logging.info("Checking test loss...")
+        test_loss = eval_fn(test_ds, model, batch_size=args.batch_size)
+        toc = time.perf_counter()
+        print(
+            f"Test loss {test_loss:.3f}, "
+            f"Test ppl {math.exp(test_loss):.3f}, "
+            f"Test eval took {(toc - tic):.3f}s, "
+        )
 
-    #     return test_loss, test_ppl
+    print(f"Saving fine-tuned weights to {args.save_weights}")
+    mx.savez(args.save_weights, **dict(tree_flatten(model.trainable_parameters())))
 
     # if args.inference:
     #     context, question = context, question
@@ -148,7 +151,12 @@ def eval_fn(dataset, model, batch_size=8):
     return loss / len(dataset)
 
 
-def load_model_tokenizer(hf_model: str, mlx_weights_path: str = "weights/bert-base-uncased.npz"):
+def load_model_tokenizer(hf_model: str,
+                         weights_pretrain_path: str = None,
+                         weights_finetuned_path: str = None,
+                         ):
+    assert weights_pretrain_path is not None or weights_finetuned_path is not None, "Must pass one weights_* parameter"
+
     from transformers import AutoConfig, AutoTokenizer
     from model_mlx import BertQA
 
@@ -156,7 +164,12 @@ def load_model_tokenizer(hf_model: str, mlx_weights_path: str = "weights/bert-ba
     config = AutoConfig.from_pretrained(hf_model)
 
     model = BertQA(config)
-    model.load_weights2(mlx_weights_path)
+    if weights_pretrain_path is not None:
+        # use load_weights2()
+        model.load_weights2(weights_pretrain_path)
+    else:
+        # uses mx standard load_weights()
+        model.load_weights(weights_finetuned_path)
 
     return model, tokenizer
 
@@ -169,9 +182,14 @@ def build_parser():
         help="Name of BERT model for tokenizer and parameters",
     )
     parser.add_argument(
-        "--mlx_weights",
+        "--load_weights",
         default="weights/bert-base-uncased.npz",
-        help="The path to the local MLX model weights",
+        help="The path to the local pre-trained MLX model weights",
+    )
+    parser.add_argument(
+        "--save_weights",
+        default="weights/tmp-fine-tuned.npz",
+        help="Path to save fine-tuned model weights",
     )
     parser.add_argument(
         "--train",
@@ -179,25 +197,25 @@ def build_parser():
         help="Do training",
     )
     parser.add_argument("--dataset_size", type=int, default=1000,
-                        help="Number of records to load for entire dataset.")
-    parser.add_argument("--batch_size", type=int, default=2, help="Minibatch size.")
+                        help="Number of records to load for entire dataset. Default is 1,000")
+    parser.add_argument("--batch_size", type=int, default=10, help="Minibatch size. Default is 10")
     parser.add_argument(
-        "--num_iters", type=int, default=4, help="Iterations to train for."
+        "--num_iters", type=int, default=4, help="Iterations to train for. Default is 4"
     )
     parser.add_argument(
         "--steps_per_report",
         type=int,
         default=2,
-        help="Number of training steps between loss reporting.",
+        help="Number of training steps between loss reporting. Default is 5",
     )
     parser.add_argument(
         "--steps_per_eval",
         type=int,
-        default=3,
-        help="Number of training steps between validations.",
+        default=10,
+        help="Number of training steps between validations. Default is 10",
     )
     parser.add_argument(
-        "--eval_test",
+        "--test",
         action="store_true",
         help="Evaluate on the test set after training",
     )
