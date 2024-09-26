@@ -4,8 +4,8 @@ Work in Progress
 
 Bert fine-tuning for Q&A with squad dataset:
 
-- [x] Implement fine-tune training and inference with HuggingFace AutoClasses (/extras)
-- [x] Implement fine-tune training and inference with PyTorch (/extras)
+- [x] Implement fine-tune training and inference with HuggingFace AutoClasses (/alt)
+- [x] Implement fine-tune training and inference with PyTorch (/alt)
 - [ ] WIP: port to Apple MLX
 
 
