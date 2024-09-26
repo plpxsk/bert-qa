@@ -22,8 +22,8 @@ def main(filter_size=500, n_epoch=3, save=False):
     # eg, compute_loss()
     # https://github.com/google-research/bert/blob/master/run_squad.py
     pre_train_model = 'bert-base-uncased'
-    model, tokenizer = load_model_tokenizer_hf(model_str=pre_train_model,
-                                               hf_auto_class="Bert")
+    model, tokenizer = load_model_tokenizer_hf(
+        model_str=pre_train_model, hf_auto_class="Bert")
 
     max_length = tokenizer.model_max_length
     args_dict = dict(tokenizer=tokenizer, tensors_kind="pt",
