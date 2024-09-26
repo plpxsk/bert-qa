@@ -89,7 +89,7 @@ class BertEmbeddings(nn.Module):
 
 
 class Bert(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, add_pooler):
         super().__init__()
         self.embeddings = BertEmbeddings(config)
         self.encoder = TransformerEncoder(
@@ -98,7 +98,8 @@ class Bert(nn.Module):
             num_heads=config.num_attention_heads,
             mlp_dims=config.intermediate_size,
         )
-        self.pooler = nn.Linear(config.hidden_size, config.hidden_size)
+        self.pooler = nn.Linear(
+            config.hidden_size, config.hidden_size) if add_pooler else None
 
     def __call__(
         self,
@@ -114,7 +115,12 @@ class Bert(nn.Module):
             attention_mask = mx.expand_dims(attention_mask, (1, 2))
 
         y = self.encoder(x, attention_mask)
-        return y, mx.tanh(self.pooler(y[:, 0]))
+        if self.pooler is not None:
+            return y, mx.tanh(self.pooler(y[:, 0]))
+        else:
+            return y
+
+
 
 
 def load_model(
@@ -137,8 +143,7 @@ def load_model(
 def run(bert_model: str, mlx_model: str, batch: List[str]):
     model, tokenizer = load_model(bert_model, mlx_model)
 
-    tokens = tokenizer(batch, return_tensors="np", padding=True)
-    tokens = {key: mx.array(v) for key, v in tokens.items()}
+    tokens = tokenizer(batch, return_tensors="mlx", padding=True)
 
     return model(**tokens)
 
