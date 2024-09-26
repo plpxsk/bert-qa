@@ -1,4 +1,4 @@
-import torch
+# import torch
 
 from datasets import load_dataset
 
@@ -44,7 +44,7 @@ data_collator = DefaultDataCollator()
 # Fine Tune aka Post Train
 # ============================================================================
 # training on 50 records dumps 4GB of data into this dir
-output_dir = "post_train_qa_long"
+output_dir = "out/post_train_qa_long"
 
 training_args = TrainingArguments(output_dir=output_dir)
 

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     # need to load model class, before loading model from disk
     pre_train_model = 'bert-base-uncased'
     model = BertForQuestionAnswering.from_pretrained(pre_train_model)
-    p = "extra/fine-tuned-model-good.pt"
+    p = "weights/pt/fine-tuned-model-good.pt"
     model.load_state_dict(torch.load(p, weights_only=True))
 
     model.eval()

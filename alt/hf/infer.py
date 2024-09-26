@@ -1,11 +1,12 @@
 import torch
+import numpy as np
 
 from transformers import AutoConfig, AutoTokenizer, AutoModelForQuestionAnswering
 from transformers import pipeline
 
 from utils import find_valid_answers
 
-output_dir = "extra/weights"
+output_dir = "weights"
 output_dir_trained = output_dir + "/" + "checkpoint-150"
 
 
@@ -65,4 +66,12 @@ predict_answer_tokens = inputs.input_ids[0,
 print(question, tokenizer.decode(predict_answer_tokens))
 
 answers = find_valid_answers(inputs, outputs, 4)
-# print_best_answers(answers)
+
+for d in answers[:5]:
+    score = d['score']
+    start = d['start']
+    end = d['end']
+    print(score)
+    predict_answer_tokens = inputs.input_ids[0, start: end + 1]
+    print(tokenizer.decode(np.array(predict_answer_tokens.flatten())))
+
