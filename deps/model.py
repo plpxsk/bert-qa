@@ -121,8 +121,6 @@ class Bert(nn.Module):
             return y
 
 
-
-
 def load_model(
     bert_model: str, weights_path: str
 ) -> Tuple[Bert, PreTrainedTokenizerBase]:
