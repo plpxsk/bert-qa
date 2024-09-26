@@ -82,7 +82,7 @@ def main(filter_size=500, n_epoch=3, save=False):
         print(f'Epoch: {epoch+1}, Valid Loss: {avg_valid_loss}')
 
     if save:
-        p = "extra/fine-tuned-model.pt"
+        p = "weights/pt/fine-tuned-model.pt"
         torch.save(model.state_dict(), p)
 
     total_test_loss = 0
