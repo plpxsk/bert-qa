@@ -1,7 +1,23 @@
-if __name__ == '__main__':
-    from transformers import BertTokenizerFast, BertForQuestionAnswering
+import torch
+from transformers import BertTokenizerFast, BertForQuestionAnswering
 
-    import torch
+
+def load_model_tokenizer(device):
+    # need to load model class, before loading model from disk
+    pre_train_model = 'bert-base-uncased'
+    model = BertForQuestionAnswering.from_pretrained(pre_train_model)
+    p = "weights/pt/fine-tuned-model-good.pt"
+    model.load_state_dict(torch.load(p, weights_only=True))
+
+    model.eval()
+
+    model.to(device)
+
+    tokenizer = BertTokenizerFast.from_pretrained(pre_train_model)
+    return model, tokenizer
+
+
+if __name__ == '__main__':
 
     from utils import find_valid_answers
 
@@ -11,17 +27,8 @@ if __name__ == '__main__':
     question = "How many programming languages does BLOOM support?"
     context = "BLOOM has 176 billion parameters and can generate text in 46 languages natural languages and 13 programming languages."
 
-    # need to load model class, before loading model from disk
-    pre_train_model = 'bert-base-uncased'
-    model = BertForQuestionAnswering.from_pretrained(pre_train_model)
-    p = "weights/pt/fine-tuned-model-good.pt"
-    model.load_state_dict(torch.load(p, weights_only=True))
-
-    model.eval()
     device = "mps"
-    model.to(device)
-
-    tokenizer = BertTokenizerFast.from_pretrained(pre_train_model)
+    model, tokenizer = load_model_tokenizer(device)
 
     inputs = tokenizer(question, context, return_tensors="pt")
     inputs.to(device)
