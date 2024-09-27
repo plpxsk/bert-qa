@@ -10,14 +10,14 @@ import mlx.nn as nn
 import mlx.optimizers as optim
 from mlx.utils import tree_flatten
 
-from utils import load_processed_datasets
+from utils import load_processed_squad
 
 
 def main(args):
     model, tokenizer = load_model_tokenizer(
         hf_model=args.model_str, weights_pretrain_path=args.load_weights)
 
-    train_ds, valid_ds, test_ds = load_processed_datasets(
+    train_ds, valid_ds, test_ds = load_processed_squad(
         filter_size=args.dataset_size, model_max_length=tokenizer.model_max_length,
         tokenizer=tokenizer)
 

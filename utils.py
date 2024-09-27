@@ -43,7 +43,7 @@ def load_squad(filter_size=500, test_valid_size=0.2, test_size=0.5, torch=False)
     return squad
 
 
-def load_processed_datasets(filter_size, model_max_length, tokenizer):
+def load_processed_squad(filter_size, model_max_length, tokenizer):
     squad = load_squad(filter_size=filter_size, torch=False)
 
     # NOTE: mlx kind. UPDATE: no
