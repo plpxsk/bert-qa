@@ -149,10 +149,8 @@ def find_valid_answers(inputs, outputs, n_best_size=20):
     # TODO: move to post-context filter??
     top_k = min(n_best_size, len(start_logits))
     # in plain python:
-    topk_start_indices = np.argsort(
-        start_logits)[-1: -n_best_size - 1: -1].tolist()
-    topk_end_indices = np.argsort(
-        end_logits)[-1: -n_best_size - 1: -1].tolist()
+    topk_start_indices = np.argsort(start_logits)[-1: -top_k - 1: -1].tolist()
+    topk_end_indices = np.argsort(end_logits)[-1: -top_k - 1: -1].tolist()
 
     # score all top logits
     for start in topk_start_indices:
