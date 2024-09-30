@@ -1,6 +1,13 @@
 run:
-	python qa.py --train
-	python qa.py --infer
+	python qa.py \
+		--model_str bert-base-uncased \
+		--load_weights weights/bert-base-uncased.npz \
+		--save_weights weights/fine_tuned_full_data_1000_iter.npz \
+		--batch_size 10 \
+		--num_iters 1000 \
+		--steps_per_report 100 \
+		--steps_per_eval 500 \
+		--test
 
 
 alternatives:
