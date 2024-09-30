@@ -25,8 +25,9 @@ def load_squad(filter_size=500, test_valid_size=0.2, test_size=0.5, torch=False)
     """
     from datasets import load_dataset, DatasetDict
 
-    # TODO update this to load full squad?
-    split_str = "train[:" + str(filter_size) + "]"
+    split_str = "train"
+    if filter_size is not None:
+        split_str = split_str + "[:" + str(filter_size) + "]"
     squad = load_dataset("squad", split=split_str)
     if torch:
         squad.set_format("torch")

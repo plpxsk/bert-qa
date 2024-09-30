@@ -1,7 +1,9 @@
+from typing import Tuple
+
 import mlx.nn as nn
 import mlx.core as mx
 
-from deps import Bert
+from deps.model import Bert
 
 
 class BertQA(nn.Module):

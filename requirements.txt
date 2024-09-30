@@ -1,4 +1,6 @@
+numpy
 mlx
 transformers
 datasets
+
 

@@ -44,6 +44,7 @@ def main(args):
     losses = []
     tic = time.perf_counter()
 
+    print("Training...")
     for it, batch in zip(range(args.num_iters), train_iterator):
         logging.info(f"Iteration {it}...")
         input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
@@ -156,7 +157,7 @@ def load_model_tokenizer(hf_model: str,
     assert weights_pretrain_path is not None or weights_finetuned_path is not None, "Must pass one weights_* parameter"
 
     from transformers import AutoConfig, AutoTokenizer
-    from model_mlx import BertQA
+    from model import BertQA
 
     tokenizer = AutoTokenizer.from_pretrained(hf_model)
     config = AutoConfig.from_pretrained(hf_model)
@@ -173,7 +174,12 @@ def load_model_tokenizer(hf_model: str,
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="TBD")
+    def none_or_int(value):
+        if value == 'None':
+            return None
+        return int(value)
+
+    parser = argparse.ArgumentParser(description="Fine tune BERT for Q&A")
     parser.add_argument(
         "--model_str",
         default="bert-base-uncased",
@@ -189,13 +195,8 @@ def build_parser():
         default="weights/tmp-fine-tuned.npz",
         help="Path to save fine-tuned model weights",
     )
-    parser.add_argument(
-        "--train",
-        action="store_true",
-        help="Do training",
-    )
-    parser.add_argument("--dataset_size", type=int, default=1000,
-                        help="Number of records to load for entire dataset. Default is 1,000")
+    parser.add_argument("--dataset_size", type=none_or_int, default=None,
+                        help="Number of records to load for entire dataset. Default is None (full data)")
     parser.add_argument("--batch_size", type=int, default=10, help="Minibatch size. Default is 10")
     parser.add_argument(
         "--num_iters", type=int, default=4, help="Iterations to train for. Default is 4"
