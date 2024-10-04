@@ -28,7 +28,7 @@ question_answerer = pipeline("question-answering", model=output_dir_trained)
 qa = question_answerer(question=question, context=context)
 qa
 
-# B) do non-pipeline training
+# B) use non-pipeline model for inference
 tokenizer = AutoTokenizer.from_pretrained(output_dir_trained)
 inputs = tokenizer(question, context, return_tensors="pt")
 
