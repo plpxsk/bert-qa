@@ -164,3 +164,58 @@ def find_valid_answers(inputs, outputs, n_best_size=20):
                 })
     valid_answers.sort(key=lambda x: x['score'], reverse=True)
     return valid_answers
+
+
+def find_valid_answers_mlx(inputs, start_logits, end_logits, n_best_size=20, top_k=None):
+    """Use for MLX outputs, with any inputs (HF/PT/MLX)
+
+    n_best_size is to filter top start logits for finding best sum score
+
+    use top_k to return only top_k final result
+    """
+    import numpy as np
+
+    valid_answers = []
+
+    context_start_index, context_end_index = find_context_start_end(
+        inputs.sequence_ids())
+
+    # model provides logits for entire input (question, context, and [SEP], [CLS])
+    # so filter only to context
+    # HOWEVER, now they are shifted so that index 0 is start of context, not start of input
+    # NEED TO shift
+    start_logits = start_logits.flatten().tolist()
+    end_logits = end_logits.flatten().tolist()
+    start_logits = start_logits[context_start_index: context_end_index + 1]
+    end_logits = end_logits[context_start_index: context_end_index + 1]
+
+    # not more than length of context
+    # TODO: move to post-context filter??
+    n_best_size = min(n_best_size, len(start_logits))
+
+    topk_start_indices = np.argsort(start_logits)[-1: -n_best_size - 1: -1].tolist()
+    topk_end_indices = np.argsort(end_logits)[-1: -n_best_size - 1: -1].tolist()
+
+    # score all top logits
+    for start in topk_start_indices:
+        for end in topk_end_indices:
+            if start <= end:
+                valid_answers.append({
+                    "score": start_logits[start] + end_logits[end],
+                    # shift indeces back to input-zero'd
+                    "start": start + context_start_index,
+                    "end": end + context_start_index
+                })
+    valid_answers.sort(key=lambda x: x['score'], reverse=True)
+    if top_k is not None:
+        valid_answers = valid_answers[:top_k]
+    return valid_answers
+
+
+def init_logger(args):
+    import logging
+
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log)
+    logging.basicConfig(level=numeric_level)

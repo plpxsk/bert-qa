@@ -10,7 +10,7 @@ import mlx.nn as nn
 import mlx.optimizers as optim
 from mlx.utils import tree_flatten
 
-from utils import load_processed_squad
+from utils import load_processed_squad, init_logger
 
 
 def main(args):
@@ -22,10 +22,7 @@ def main(args):
         tokenizer=tokenizer)
 
     # set logger after loading squad
-    numeric_level = getattr(logging, args.log.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s' % args.log)
-    logging.basicConfig(level=numeric_level)
+    init_logger(args)
 
     mx.eval(model.parameters())
     optimizer = optim.AdamW(learning_rate=1e-5)
