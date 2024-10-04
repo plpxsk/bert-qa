@@ -77,10 +77,26 @@ def find_context_start_end(sequence_ids):
 def preprocess_tokenize_function(examples, tokenizer, max_length, tensors_kind=None):
     """Adapted from HF
 
+    Convert Q&A examples for use in models
+
+    Source B has tokenizer options stride and return_overflowing_tokens, with
+    different inequality logic (> start_char, < end_char etc)
+
+    Sources:
+    A)
     https://huggingface.co/docs/transformers/en/tasks/question_answering
+    https://github.com/huggingface/transformers/blame/main/docs/source/en/tasks/question_answering.md
+
+    B) Nov 22 2022
+    https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt#post-processing
+    https://github.com/huggingface/course/blame/main/chapters/en/chapter7/7.mdx
+
     """
     # available_tensors = ["mlx", "pt"]
     # assert tensors_kind in available_tensors, f"tensors_kind must be one of {available_tensors}"
+
+    # HF source B: 384 // 3 = 128 for stride
+    stride = max_length // 3
 
     questions = [q.strip() for q in examples["question"]]
     inputs = tokenizer(
@@ -88,18 +104,22 @@ def preprocess_tokenize_function(examples, tokenizer, max_length, tensors_kind=N
         examples["context"],
         max_length=max_length,
         truncation="only_second",
+        stride=stride,
+        return_overflowing_tokens=True,
         return_offsets_mapping=True,
         padding="max_length",
         return_tensors=tensors_kind
     )
 
     offset_mapping = inputs.pop("offset_mapping")
+    sample_map = inputs.pop("overflow_to_sample_mapping")
     answers = examples["answers"]
     start_positions = []
     end_positions = []
 
     for i, offset in enumerate(offset_mapping):
-        answer = answers[i]
+        sample_idx = sample_map[i]
+        answer = answers[sample_idx]
         start_char = answer["answer_start"][0]
         end_char = answer["answer_start"][0] + len(answer["text"][0])
         sequence_ids = inputs.sequence_ids(i)
@@ -107,7 +127,7 @@ def preprocess_tokenize_function(examples, tokenizer, max_length, tensors_kind=N
         context_start, context_end = find_context_start_end(sequence_ids)
 
         # If the answer is not fully inside the context, label it (0, 0)
-        if offset[context_start][0] > end_char or offset[context_end][1] < start_char:
+        if offset[context_start][0] > start_char or offset[context_end][1] < end_char:
             start_positions.append(0)
             end_positions.append(0)
         else:
