@@ -148,7 +148,13 @@ def preprocess_tokenize_function(examples, tokenizer, max_length, tensors_kind=N
     return inputs
 
 
-def find_valid_answers(inputs, outputs, n_best_size=20):
+def find_valid_answers(inputs, outputs, n_best_size=20, top_k=None):
+    """Use for HF/PyTorch inputs and outputs
+
+    n_best_size is to filter top start logits for finding best sum score
+
+    use top_k to return only top_k final result
+    """
     import numpy as np
 
     valid_answers = []
@@ -167,10 +173,10 @@ def find_valid_answers(inputs, outputs, n_best_size=20):
 
     # not more than length of context
     # TODO: move to post-context filter??
-    top_k = min(n_best_size, len(start_logits))
-    # in plain python:
-    topk_start_indices = np.argsort(start_logits)[-1: -top_k - 1: -1].tolist()
-    topk_end_indices = np.argsort(end_logits)[-1: -top_k - 1: -1].tolist()
+    n_best_size = min(n_best_size, len(start_logits))
+
+    topk_start_indices = np.argsort(start_logits)[-1: -n_best_size - 1: -1].tolist()
+    topk_end_indices = np.argsort(end_logits)[-1: -n_best_size - 1: -1].tolist()
 
     # score all top logits
     for start in topk_start_indices:
@@ -182,7 +188,10 @@ def find_valid_answers(inputs, outputs, n_best_size=20):
                     "start": start + context_start_index,
                     "end": end + context_start_index
                 })
+    # always sort
     valid_answers.sort(key=lambda x: x['score'], reverse=True)
+    if top_k is not None:
+        valid_answers = valid_answers[:top_k]
     return valid_answers
 
 
