@@ -19,7 +19,7 @@ def load_model_tokenizer(device):
 
 if __name__ == '__main__':
 
-    from utils import find_valid_answers
+    from utils import get_answers
 
     context = "HF Transformers is backed by the three most popular deep learning libraries - Jax, PyTorch and TensorFlow - with a seamless integration between them. It's straightforward to train your models with one before loading them for inference with the other"
     question = "Which deep learning libraries back HF Transformers?"
@@ -37,7 +37,7 @@ if __name__ == '__main__':
         outputs = model(**inputs)
 
     # explore answer
-    answers = find_valid_answers(inputs, outputs)
+    answers = get_answers(outputs.start_logits, outputs.end_logits, inputs.sequence_ids())
     print("\n", question)
     for d in answers[:5]:
         score = d['score']

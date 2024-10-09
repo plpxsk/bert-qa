@@ -1,14 +1,14 @@
 import torch
-from torch.utils.data import DataLoader
-from datasets import load_dataset, DatasetDict
 
-from utils import find_context_start_end, preprocess_tokenize_function
-from utils import load_model_tokenizer_hf, load_squad
+from utils import load_squad_raw, split_dataset, preprocess_tokenize_function
+from model import load_model_tokenizer_hf
 
 
 def main(filter_size=500, n_epoch=3, save=False):
-    squad = load_squad(filter_size=filter_size,
-                       test_valid_size=0.2, test_size=0.5, torch=True)
+    load_split = "train[:" + str(filter_size) + "]"
+
+    squad = load_squad_raw(load_split=load_split, torch=True)
+    squad = split_dataset(squad, test_valid_frac=0.2, test_frac=0.5)
 
     # Define the model
     # This model inherits from PreTrainedModel
@@ -22,13 +22,9 @@ def main(filter_size=500, n_epoch=3, save=False):
     # eg, compute_loss()
     # https://github.com/google-research/bert/blob/master/run_squad.py
     pre_train_model = 'bert-base-uncased'
-    model, tokenizer = load_model_tokenizer_hf(
-        model_str=pre_train_model, hf_auto_class="Bert")
+    model, tokenizer = load_model_tokenizer_hf(hf_model=pre_train_model)
 
-    max_length = tokenizer.model_max_length
-    args_dict = dict(tokenizer=tokenizer, tensors_kind="pt",
-                     max_length=max_length)
-
+    args_dict = dict(tokenizer=tokenizer, tensors_kind="pt")
     tokenized_squad = squad.map(preprocess_tokenize_function, batched=True,
                                 remove_columns=squad["train"].column_names,
                                 fn_kwargs=args_dict)
@@ -87,7 +83,7 @@ def main(filter_size=500, n_epoch=3, save=False):
 
     total_test_loss = 0
     for batch in test_dataloader:
-        print(f"Running batch...")
+        print("Running batch...")
         input_ids = batch['input_ids'].to(device)
         attention_mask = batch['attention_mask'].to(device)
         start_positions = batch['start_positions'].to(device)
