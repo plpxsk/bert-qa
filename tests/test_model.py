@@ -5,7 +5,6 @@ from utils import get_answers, find_context_start_end
 from model import load_model_tokenizer
 
 
-
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
@@ -36,16 +35,15 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(exp_len, start_logits.shape[1])
         self.assertEqual(exp_len, end_logits.shape[1])
 
-        answers = get_answers(start_logits, end_logits, tokenized_inputs.sequence_ids(),
-                              top_k=3)
+        valid_but_poor_answers = get_answers(start_logits, end_logits,
+                                             tokenized_inputs.sequence_ids(), top_k=3)
 
         # top answer would be answers[0]
-        for answer in answers:
+        for answer in valid_but_poor_answers:
 
             start = answer["start"]
             end = answer["end"]
             score = answer["score"]
-            print(score)
 
             # answers should be within context
             self.assertTrue(exp_context_start <= start)
