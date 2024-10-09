@@ -3,8 +3,7 @@
 from datasets import load_dataset
 
 from transformers import DefaultDataCollator, TrainingArguments, Trainer
-from transformers import AutoConfig, AutoTokenizer, AutoModelForQuestionAnswering
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 
 from utils import preprocess_tokenize_function
 
@@ -31,8 +30,7 @@ tokenizer = AutoTokenizer.from_pretrained(bert_model)
 # ============================================================================
 # preprocess data
 # ============================================================================
-max_length = tokenizer.model_max_length
-args_dict = dict(tokenizer=tokenizer, max_length=max_length)
+args_dict = dict(tokenizer=tokenizer)
 
 tokenized_squad = squad.map(preprocess_tokenize_function, batched=True,
                             remove_columns=squad["train"].column_names,
@@ -44,7 +42,7 @@ data_collator = DefaultDataCollator()
 # Fine Tune aka Post Train
 # ============================================================================
 # training on 50 records dumps 4GB of data into this dir
-output_dir = "out/post_train_qa_long"
+output_dir = "weights/post_train_qa_long"
 
 training_args = TrainingArguments(output_dir=output_dir)
 
