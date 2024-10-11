@@ -10,19 +10,23 @@ import mlx.nn as nn
 import mlx.optimizers as optim
 from mlx.utils import tree_flatten
 
-from utils import load_processed_squad, init_logger
+from utils import load_squad, init_logger, preprocess_tokenize_function
+from model import load_model_tokenizer
 
 
 def main(args):
     model, tokenizer = load_model_tokenizer(
         hf_model=args.model_str, weights_pretrain_path=args.load_weights)
 
-    train_ds, valid_ds, test_ds = load_processed_squad(
-        filter_size=args.dataset_size, model_max_length=tokenizer.model_max_length,
-        tokenizer=tokenizer)
+    load_split = ("train" if args.dataset_size is None
+                  else "train[:" + str(args.dataset_size) + "]")
+    train_ds, valid_ds, test_ds = load_squad(
+        load_split=load_split, tokenizer=tokenizer,
+        preproc_function=preprocess_tokenize_function,
+        test_valid_frac=0.2, test_frac=0.5, return_tuples=True, torch=False)
 
     # set logger after loading squad
-    init_logger(args)
+    init_logger(args.log)
 
     mx.eval(model.parameters())
     optimizer = optim.AdamW(learning_rate=1e-5)
@@ -76,11 +80,6 @@ def main(args):
             )
             tic = time.perf_counter()
 
-    # if args.train:
-    #     opt = opt
-    #     train()
-    #     mx.savez(save_file)
-
     tic = time.perf_counter()
     if args.test:
         logging.info("Checking test loss...")
@@ -94,10 +93,6 @@ def main(args):
 
     print(f"Saving fine-tuned weights to {args.save_weights}")
     mx.savez(args.save_weights, **dict(tree_flatten(model.trainable_parameters())))
-
-    # if args.inference:
-    #     context, question = context, question
-    #     run()
 
 
 def batch_iterate(dataset, batch_size):
@@ -145,29 +140,6 @@ def eval_fn(dataset, model, batch_size=8):
     logging.debug(f"eval_fn() final loss: {loss}")
     logging.debug(f"eval_fn() len(dataset): {len(dataset)}")
     return loss / len(dataset)
-
-
-def load_model_tokenizer(hf_model: str,
-                         weights_pretrain_path: str = None,
-                         weights_finetuned_path: str = None,
-                         ):
-    assert weights_pretrain_path is not None or weights_finetuned_path is not None, "Must pass one weights_* parameter"
-
-    from transformers import AutoConfig, AutoTokenizer
-    from model import BertQA
-
-    tokenizer = AutoTokenizer.from_pretrained(hf_model)
-    config = AutoConfig.from_pretrained(hf_model)
-
-    model = BertQA(config)
-    if weights_pretrain_path is not None:
-        # use load_weights2()
-        model.load_weights2(weights_pretrain_path)
-    else:
-        # uses mx standard load_weights()
-        model.load_weights(weights_finetuned_path)
-
-    return model, tokenizer
 
 
 def build_parser():
