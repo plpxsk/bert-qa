@@ -13,17 +13,11 @@ class BertQA(nn.Module):
         self.num_labels = config.num_labels
         self.qa_output = nn.Linear(config.hidden_size, config.num_labels)
 
-        # TODO: factor this out? no strict?
-    def load_weights2(self, path: str):
-        # strict=False to omit loading pooler.bias, pooler.weight
-        self.model.load_weights(path, strict=False)
-
     def __call__(
             self,
             input_ids: mx.array,
             token_type_ids: mx.array,
             attention_mask: mx.array
-            # TODO return type?
     ) -> Tuple[mx.array, mx.array]:
 
         # if batch_size = 16 then shape of input_ids is like: (16, 512, 768)
@@ -37,7 +31,7 @@ class BertQA(nn.Module):
 
         # split shape (b, x, 2) into two shapes (b, x, 1)
         # then, remove last dim so shape is (b, x)
-        start_logits, end_logits = mx.split(logits, 2, axis=-1)
+        start_logits, end_logits = mx.split(logits, indices_or_sections=2, axis=-1)
         start_logits = start_logits.squeeze(-1)
         end_logits = end_logits.squeeze(-1)
 
@@ -56,8 +50,8 @@ def load_model_tokenizer(hf_model: str,
                          weights_pretrain_path: str = None,
                          weights_finetuned_path: str = None
                          ):
-    assert weights_pretrain_path is not None or weights_finetuned_path is not None, \
-        "Must pass one weights_* parameter"
+    assert weights_pretrain_path is not None or weights_finetuned_path is not None, (
+        "Must pass one weights_* parameter")
 
     from transformers import AutoConfig, AutoTokenizer
 
@@ -66,10 +60,9 @@ def load_model_tokenizer(hf_model: str,
 
     model = BertQA(config)
     if weights_pretrain_path is not None:
-        # use load_weights2()
-        model.load_weights2(weights_pretrain_path)
+        # strict=False to omit loading pooler.bias, pooler.weight
+        model.load_weights(weights_pretrain_path, strict=False)
     else:
-        # uses mx standard load_weights()
         model.load_weights(weights_finetuned_path)
 
     return model, tokenizer

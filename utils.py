@@ -139,7 +139,7 @@ def preprocess_tokenize_function(examples, tokenizer, tensors_kind=None):
 
 
 def get_answers(start_logits, end_logits, tokenized_input_sequence_ids, flatten_to_list=True,
-                top_k=5, n_best_size=20):
+                top_k=None, n_best_size=20):
     """Get valid answers from Q&A model outputs
 
     Valid means start_char <= end_char
@@ -149,7 +149,6 @@ def get_answers(start_logits, end_logits, tokenized_input_sequence_ids, flatten_
     Processing starts with n_best_size highest start_logits and end_logits, and
     then sums the two logits for sorting into top_k scores
     """
-
     context_start_index, context_end_index = find_context_start_end(
         tokenized_input_sequence_ids)
 
@@ -162,7 +161,6 @@ def get_answers(start_logits, end_logits, tokenized_input_sequence_ids, flatten_
                                        n_best_size=n_best_size, sort=True)
     if top_k is not None:
         valid_answers = valid_answers[:top_k]
-
     return valid_answers
 
 
