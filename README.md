@@ -1,4 +1,4 @@
-# Fine tune BERT for Q&A
+# Fine tune BERT for Q&A on laptop using Apple MLX
 
 Work in Progress
 
@@ -11,8 +11,13 @@ Bert fine-tuning for Q&A with squad dataset:
 
 # Run
 
-For code scripts, see [Makefile](Makefile).
+For code recipes, see [Makefile](Makefile).
 
 # Test
 
 Run some tests with `make test` per Makefile
+
+# Alternative Implementations
+
+See `/alt` for POCs of training and inference with HuggingFace pipelines and/or
+PyTorch
