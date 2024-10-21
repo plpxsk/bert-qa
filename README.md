@@ -6,7 +6,7 @@ With `squad` Question and Answer dataset and MacBook with Apple Silicon
 
 1. Install `requirements.txt`
     * `torch` is required only for next step conversion
-1. Convert base BERT model to MLX with `make convert`
+1. Convert pre-trained BERT model weights to MLX with `make convert`
 
 # Run
 
