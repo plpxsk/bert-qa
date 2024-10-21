@@ -33,9 +33,9 @@ testit:
 infer:
 	python qa.py \
 		--infer \
-		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz \
+		--weights_finetuned weights/demo_fine_tuned.npz \
 		--question "How many programming languages does BLOOM support?" \
-		--context "BLOOM has 176 billion parameters and can generate text in 46 languages natural languages and 13 programming languages."
+		--context "BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages."
 
 alts:
 	PYTHONPATH=. python alt/hf/train.py

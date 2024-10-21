@@ -10,9 +10,9 @@ With `squad` Question and Answer dataset and MacBook with Apple Silicon
 
 # Run
 
-Run a demo fine-tuning script with test eval via `make demo`. See Demo below.
+Run a demo fine-tuning script with test eval via `make demo`. 
 
-Once you have fine-tuned weights, run Q&A inference like in `make infer`
+Then, run a demo inference with `make infer`. See "Demo" below.
 
 For full training and inference code recipes, see [Makefile](Makefile).
 
@@ -24,7 +24,7 @@ This should take only a few seconds, unless HuggingFace needs to download the
 `squad` dataset.
 
 ```
-(.venv) qa# make demo
+(.venv) bert-qa# make demo
 python qa.py \
                 --train \
                 --test \
@@ -45,6 +45,25 @@ Saving fine-tuned weights to weights/demo_fine_tuned.npz
 Checking test loss...
 Test loss 4.918, Test ppl 136.747, Test eval took 3.465s
 ```
+
+Inference is very quick (but can be quite wrong with demo training):
+
+```
+(.venv) bert-qa# make infer
+python qa.py \
+                --infer \
+                --weights_finetuned weights/demo_fine_tuned.npz \
+                --question "How many programming languages does BLOOM support?" \
+                --context "BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages."
+Running inference...
+# Context, Question:
+BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages.
+How many programming languages does BLOOM support? 
+
+Answer:  languages and 13 programming
+Score:  4.9233527183532715 
+```
+
 
 # Test
 
