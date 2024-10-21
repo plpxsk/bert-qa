@@ -1,6 +1,2 @@
-torch
-evaluate
-transformers[torch]
-
 pytest
 flake8
