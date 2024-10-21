@@ -54,7 +54,7 @@ Run some tests with `make test` per Makefile
 
 # Alternative Implementations
 
-See README in `/alt` for POCs of fine-tune training and inference with
+See [README](alt/README.md) in `/alt` for POCs of fine-tune training and inference with
 HuggingFace pipelines and/or PyTorch
 
 # Dependencies
