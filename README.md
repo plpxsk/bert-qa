@@ -24,13 +24,13 @@ This should take only a few seconds, unless HuggingFace needs to download the
 `squad` dataset.
 
 ```
-(.venv) qa# make short
+(.venv) qa# make demo
 python qa.py \
                 --train \
                 --test \
                 --model_str bert-base-uncased \
                 --weights_pretrain weights/bert-base-uncased.npz \
-                --weights_finetuned weights/short_fine_tuned.npz \
+                --weights_finetuned weights/demo_fine_tuned.npz \
                 --dataset_size 1000 \
                 --num_iters 10
 Loading datasets...
@@ -41,7 +41,7 @@ Training for 10 iters...
 Iter 5: Train loss 5.474, Train ppl 238.462, It/sec 0.939
 Iter 10: Train loss 5.115, Train ppl 166.544, It/sec 0.949
 Iter 10: Val loss 4.958, Val ppl 142.341, Val took 3.414s, 
-Saving fine-tuned weights to weights/short_fine_tuned.npz
+Saving fine-tuned weights to weights/demo_fine_tuned.npz
 Checking test loss...
 Test loss 4.918, Test ppl 136.747, Test eval took 3.465s
 ```
