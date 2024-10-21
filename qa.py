@@ -140,8 +140,8 @@ def infer(model, tokenizer, question, context, top_k=1):
         answer = tokenizer.decode(np.array(tokens))
         return answer
 
-    print("### Context, context:")
-    print(context)
+    print("# Context, Question:")
+    print(context, "\n")
     print(question, "\n")
 
     for answer in answers:
@@ -149,7 +149,7 @@ def infer(model, tokenizer, question, context, top_k=1):
         end = answer["end"]
         score = answer["score"]
         answer = get_answer_from_tokenized_inputs(tokenized_inputs, start, end)
-        print("A: ", answer)
+        print("Answer: ", answer)
         print("Score: ", score, "\n")
 
 
