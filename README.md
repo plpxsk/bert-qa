@@ -10,8 +10,7 @@ With `squad` Question and Answer dataset and MacBook with Apple Silicon
 
 # Run
 
-Run a demo fine-tuning script with test eval via `make demo`. See Example
-below.
+Run a demo fine-tuning script with test eval via `make demo`. See Demo below.
 
 Once you have fine-tuned weights, run Q&A inference like in `make infer`
 
