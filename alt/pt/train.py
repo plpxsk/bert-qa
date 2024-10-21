@@ -15,12 +15,6 @@ def main(filter_size=500, n_epoch=3, save=False):
     # This model is also a PyTorch torch.nn.Module subclass
     # https://huggingface.co/transformers/v4.9.2/model_doc/bert.html?highlight=bertforquestionanswering
 
-    # Loss? Loss is:
-    # Total span extraction loss is the sum of a Cross-Entropy for the start and end positions.
-
-    # also see google BERT run_squad.py
-    # eg, compute_loss()
-    # https://github.com/google-research/bert/blob/master/run_squad.py
     pre_train_model = 'bert-base-uncased'
     model, tokenizer = load_model_tokenizer_hf(hf_model=pre_train_model)
 

@@ -172,7 +172,6 @@ def loss_fn(model, input_ids, token_type_ids, attention_mask, start_positions,
     return loss
 
 
-# TODO review this
 def eval_fn(dataset, model, batch_size=8):
     loss = 0
     for s in range(0, len(dataset), batch_size):

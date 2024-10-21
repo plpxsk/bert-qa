@@ -79,9 +79,6 @@ def preprocess_tokenize_function(examples, tokenizer, tensors_kind=None):
     https://github.com/huggingface/course/blame/main/chapters/en/chapter7/7.mdx
 
     """
-    # available_tensors = ["mlx", "pt"]
-    # assert tensors_kind in available_tensors, f"tensors_kind must be one of {available_tensors}"
-
     max_length = tokenizer.model_max_length
 
     # HF source B: 384 // 3 = 128 for stride

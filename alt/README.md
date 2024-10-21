@@ -3,9 +3,9 @@
 HuggingFace (`hf`) is highest-level, PyTorch and Tensorflow are lower-level
 implementations.
 
-To run:
+# How to run
 
-- These have separate requirements.txt
+- These have separate `requirements.txt`
 - First train (to get weights), then infer
-- These are ran from root project dir to use `utils.py` and similar. See
+- Scripts are ran from root project dir to use `utils.py` and similar. See
   `Makefile` in root
