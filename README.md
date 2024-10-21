@@ -5,7 +5,7 @@ With `squad` Question and Answer dataset and MacBook with Apple Silicon
 # Set up
 
 1. Install `requirements.txt`
-  * `torch` is required only for next step conversion
+    * `torch` is required only for next step conversion
 1. Convert base BERT model to MLX with `make convert`
 
 # Run
