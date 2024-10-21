@@ -66,5 +66,5 @@ Dependent BERT model code and conversion script in `/deps` is from
 machine learning on Apple silicon. See
 [github.com/ml-explore/mlx](https://github.com/ml-explore/mlx).
 
-Original `BERT` model is from Google. See
+For original `BERT` model, see
 [github.com/google-research/bert](https://github.com/google-research/bert).
