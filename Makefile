@@ -1,15 +1,16 @@
-short:
+convert:
+	mkdir -p weights
+	python deps/convert.py --bert-model bert-base-uncased --mlx-model weights/bert-base-uncased.npz
+
+demo:
 	python qa.py \
 		--train \
 		--test \
 		--model_str bert-base-uncased \
 		--weights_pretrain weights/bert-base-uncased.npz \
-		--weights_finetuned weights/tmp_fine_tuned.npz \
+		--weights_finetuned weights/demo_fine_tuned.npz \
 		--dataset_size 1000 \
-		--batch_size 10 \
-		--num_iters 10 \
-		--steps_per_report 5 \
-		--steps_per_eval 10
+		--num_iters 10
 
 train:
 	python qa.py \
