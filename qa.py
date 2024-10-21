@@ -186,7 +186,7 @@ def eval_fn(dataset, model, batch_size=8):
                          start_positions, end_positions, reduction="none")
         losses_have_nans = mx.isnan(losses).any()
         if losses_have_nans:
-            logging.debug(f"eval_fn() found losses with nans: {losses}")
+            logging.debug(f"eval_fn() found NANs in losses: {losses}")
         loss += mx.sum(losses).item()
     logging.debug(f"eval_fn() final loss: {loss}")
     logging.debug(f"eval_fn() len(dataset): {len(dataset)}")
