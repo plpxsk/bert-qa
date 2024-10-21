@@ -1,4 +1,4 @@
-# Fine tune BERT for Q&A on laptop using Apple MLX
+# Fine tune BERT for Q&A on MacBook using Apple MLX
 
 Work in Progress
 
@@ -8,6 +8,7 @@ Bert fine-tuning for Q&A with squad dataset:
 - [x] Implement fine-tune training and inference with PyTorch (/alt)
 - [ ] WIP: port to Apple MLX
 
+Uses Apple MLX for training using Apple Silicon. See [github.com/ml-explore/mlx](https://github.com/ml-explore/mlx).
 
 # Run
 
