@@ -125,7 +125,7 @@ def test(model, test_ds, batch_size):
     print(
         f"Test loss {test_loss:.3f}, "
         f"Test ppl {math.exp(test_loss):.3f}, "
-        f"Test eval took {(toc - tic):.3f}s, "
+        f"Test eval took {(toc - tic):.3f}s"
     )
 
 
@@ -140,8 +140,8 @@ def infer(model, tokenizer, question, context, top_k=1):
         answer = tokenizer.decode(np.array(tokens))
         return answer
 
-    print("### Context, context:")
-    print(context)
+    print("# Context, Question:")
+    print(context, "\n")
     print(question, "\n")
 
     for answer in answers:
@@ -149,7 +149,7 @@ def infer(model, tokenizer, question, context, top_k=1):
         end = answer["end"]
         score = answer["score"]
         answer = get_answer_from_tokenized_inputs(tokenized_inputs, start, end)
-        print("A: ", answer)
+        print("Answer: ", answer)
         print("Score: ", score, "\n")
 
 
@@ -223,12 +223,12 @@ def build_parser():
                         help="Number of records to load for entire dataset. Default is None (full data)")  # noqa
     parser.add_argument("--batch_size", type=int, default=10, help="Minibatch size. Default is 10")
     parser.add_argument(
-        "--num_iters", type=int, default=4, help="Iterations to train for. Default is 4"
+        "--num_iters", type=int, default=100, help="Iterations to train for. Default is 100"
     )
     parser.add_argument(
         "--steps_per_report",
         type=int,
-        default=2,
+        default=5,
         help="Number of training steps between loss reporting. Default is 5",
     )
     parser.add_argument(

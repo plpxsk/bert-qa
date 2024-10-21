@@ -1,6 +1,5 @@
-numpy
 mlx
+numpy
+torch
 transformers
 datasets
-
-
