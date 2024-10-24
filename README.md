@@ -1,6 +1,6 @@
 # Fine tune BERT model for Q&A with Apple MLX
 
-With `squad` Question and Answer dataset and MacBook with Apple Silicon
+With `squad` Question and Answer dataset and Mac with Apple Silicon
 
 # Set up
 
