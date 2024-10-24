@@ -1,7 +1,7 @@
 import unittest
 
 from utils import load_squad_raw, split_dataset, preproc_squad, load_squad
-from utils import preprocess_tokenize_function, find_context_start_end
+from utils import preprocess_tokenize_function
 from model import load_model_tokenizer_hf
 
 
