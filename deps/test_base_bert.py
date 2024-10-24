@@ -1,7 +1,17 @@
+"""
+To test the source MLX implementation of the BERT model architecture
+
+Modified with add_pooler option to match deps/model.py modifications
+
+Source:
+
+https://github.com/ml-explore/mlx-examples/blob/9000e280aeb56c2bcce128001ab157030095687a/bert/test.py
+"""
+
 import argparse
 from typing import List
 
-import model
+import deps.model as deps_model
 import numpy as np
 from transformers import AutoModel, AutoTokenizer
 
@@ -43,7 +53,8 @@ if __name__ == "__main__":
 
     torch_output, torch_pooled = run_torch(args.bert_model, args.text)
 
-    mlx_output, mlx_pooled = model.run(args.bert_model, args.mlx_model, args.text)
+    mlx_output, mlx_pooled = deps_model.run(
+        args.bert_model, args.mlx_model, args.text, add_pooler=True)
 
     if torch_pooled is not None and mlx_pooled is not None:
         assert np.allclose(
@@ -52,6 +63,6 @@ if __name__ == "__main__":
         assert np.allclose(
             torch_pooled, mlx_pooled, rtol=1e-4, atol=1e-5
         ), "Model pooled output is different"
-        print("Tests pass :)")
+        print("==================== test_base_bert.py passes: MLX and HF implementations match ====================")  # noqa
     else:
         print("Pooled outputs were not compared due to one or both being None.")
