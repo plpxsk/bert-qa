@@ -273,4 +273,7 @@ if __name__ == '__main__':
     parser = build_parser()
     args = parser.parse_args()
 
+    if not args.train or not args.test or not args.infer:
+        raise ValueError("Must select one of --train, --test, --infer")
+
     main(args)
