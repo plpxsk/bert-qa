@@ -186,7 +186,7 @@ def filter_logits_to_context(logits, context_start_index, context_end_index, fla
     return logits
 
 
-def find_valid_answers(start_logits, end_logits, context_start_index, n_best_size, sort=True):
+def find_valid_answers(start_logits, end_logits, context_start_index, n_best_size=20, sort=True):
     import numpy as np
 
     # can't be more than length of context
