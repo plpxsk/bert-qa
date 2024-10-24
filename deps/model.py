@@ -122,7 +122,7 @@ class Bert(nn.Module):
 
 
 def load_model(
-    bert_model: str, weights_path: str
+        bert_model: str, weights_path: str, add_pooler: bool = True
 ) -> Tuple[Bert, PreTrainedTokenizerBase]:
     if not Path(weights_path).exists():
         raise ValueError(f"No model weights found in {weights_path}")
@@ -130,7 +130,7 @@ def load_model(
     config = AutoConfig.from_pretrained(bert_model)
 
     # create and update the model
-    model = Bert(config)
+    model = Bert(config, add_pooler=add_pooler)
     model.load_weights(weights_path)
 
     tokenizer = AutoTokenizer.from_pretrained(bert_model)
@@ -138,8 +138,8 @@ def load_model(
     return model, tokenizer
 
 
-def run(bert_model: str, mlx_model: str, batch: List[str]):
-    model, tokenizer = load_model(bert_model, mlx_model)
+def run(bert_model: str, mlx_model: str, batch: List[str], add_pooler: bool = True):
+    model, tokenizer = load_model(bert_model, mlx_model, add_pooler=add_pooler)
 
     tokens = tokenizer(batch, return_tensors="mlx", padding=True)
 
