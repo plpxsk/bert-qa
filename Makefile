@@ -45,5 +45,6 @@ alts:
 	PYTHONPATH=. python alt/pt/infer.py
 
 test:
+	PYTHONPATH=. python deps/test_base_bert.py
 	PYTHONPATH=. pytest
-	PYTHONPATH=. python tests/test_compare_hf.py
+
