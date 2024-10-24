@@ -1,6 +1,11 @@
 # Fine tune BERT model for Q&A with Apple MLX
 
-With `squad` Question and Answer dataset and Mac with Apple Silicon
+Using `squad` Question and Answer dataset and Mac with Apple Silicon.
+
+After fine-tune training the base BERT model, you can find answers to questions
+in your document ("context").
+
+As typical, the answer is an exact extract from the provided context.
 
 # Set up
 
@@ -10,15 +15,17 @@ With `squad` Question and Answer dataset and Mac with Apple Silicon
 
 # Run
 
-Run a demo fine-tuning script with test eval via `make demo`. 
+Run a demo fine-tuning script with evaluation on test set, via `make demo`.
 
 Then, run a demo inference with `make infer`. See "Demo" below.
 
 For full training and inference code recipes, see [Makefile](Makefile).
 
-### Demo
+# Demo
 
 _On MacBook with M1 Pro and 32 GB RAM_
+
+### Training
 
 This should take only a few seconds, unless HuggingFace needs to download the
 `squad` dataset.
@@ -46,7 +53,9 @@ Checking test loss...
 Test loss 4.918, Test ppl 136.747, Test eval took 3.465s
 ```
 
-Inference is very quick (but can be quite wrong with demo training):
+### Inference
+
+Inference is very quick (but can be quite wrong with short demo fine-tuning):
 
 ```
 (.venv) bert-qa# make infer
@@ -58,27 +67,27 @@ python qa.py \
 Running inference...
 # Context, Question:
 BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages.
+
 How many programming languages does BLOOM support? 
 
 Answer:  languages and 13 programming
 Score:  4.9233527183532715 
 ```
 
-
-# Test
+# Tests
 
 _Install `pytest`. See `requirements_extra.txt`_
 
-Run some tests with `make test` per Makefile
+Run some tests with `make test` per Makefile.
 
 # Alternative Implementations
 
-See [README](alt/README.md) in `/alt` for POCs of fine-tune training and inference with
-HuggingFace pipelines and/or PyTorch
+See [README](alt/README.md) in `/alt` for alternative fine-tune training and
+inference with PyTorch and/or higher-level HuggingFace pipelines.
 
 # Dependencies
 
-Dependent BERT model code and conversion script in `/deps` is from
+Dependent BERT base model architecture and conversion script in `/deps` is from
 [ml-explore/mlx-examples](https://github.com/ml-explore/mlx-examples/tree/main/bert).
 
 `MLX` is a NumPy-like array framework designed for efficient and flexible
