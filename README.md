@@ -15,6 +15,9 @@ As typical, the answer is an exact extract from the provided context.
 
 # Run
 
+_The main script is `qa.py` which imports `model.py`, `utils.py` and depends on
+`/deps`._
+
 Run a demo fine-tuning script with evaluation on test set, via `make demo`.
 
 Then, run a demo inference with `make infer`. See "Demo" below.
