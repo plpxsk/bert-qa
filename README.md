@@ -77,11 +77,17 @@ Answer:  languages and 13 programming
 Score:  4.9233527183532715 
 ```
 
+
 # Tests
 
-_Install `pytest`. See `requirements_extra.txt`_
+_Install per `requirements_extra.txt`_
 
 Run some tests with `make test` per Makefile.
+
+Tests includes:
+
+  * confirm model architecture against Huggingface model
+  * confirm loss against official BERT implementation loss
 
 # Alternative Implementations
 

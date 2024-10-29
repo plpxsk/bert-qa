@@ -166,6 +166,11 @@ def loss_fn(model, input_ids, token_type_ids, attention_mask, start_positions,
         input_ids=input_ids,
         token_type_ids=token_type_ids,
         attention_mask=attention_mask)
+    loss = compute_loss(start_logits, end_logits, start_positions, end_positions, reduction="mean")
+    return loss
+
+
+def compute_loss(start_logits, end_logits, start_positions, end_positions, reduction="mean"):
     slosses = nn.losses.cross_entropy(start_logits, start_positions, reduction=reduction)
     elosses = nn.losses.cross_entropy(end_logits, end_positions, reduction=reduction)
     loss = (slosses + elosses) / 2

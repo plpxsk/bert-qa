@@ -1,2 +1,4 @@
 pytest
+tensorflow
 flake8
+
