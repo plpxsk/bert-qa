@@ -3,9 +3,9 @@
 Using `squad` Question and Answer dataset and Mac with Apple Silicon.
 
 After fine-tune training the base BERT model, you can find answers to questions
-in your document ("context").
+in your document.
 
-As typical, the answer is an exact extract from the provided context.
+As typical, the answer is an exact extract from the provided document ("context").
 
 # Set up
 
