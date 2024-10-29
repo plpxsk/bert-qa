@@ -54,6 +54,17 @@ def split_dataset(dataset, test_valid_frac: float = 0.25, test_frac: float = 0.5
 
 
 def preproc_squad(squad, tokenizer, preproc_function, remove_columns, batched=True):
+    """
+    Use batched=True per HF doc:
+
+    To apply this function to the whole training set, we use the
+    Dataset.map() method with the batched=True flag. It’s necessary here as we
+    are changing the length of the dataset (since one example can give several
+    training features)
+
+    https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt#processing-the-training-data
+    """
+
     args_dict = dict(tokenizer=tokenizer, tensors_kind=None)
     squad = squad.map(preproc_function, batched=batched,
                       remove_columns=remove_columns, fn_kwargs=args_dict)
@@ -61,13 +72,14 @@ def preproc_squad(squad, tokenizer, preproc_function, remove_columns, batched=Tr
 
 
 def preprocess_tokenize_function(examples, tokenizer, tensors_kind=None):
+
     """
     Convert Q&A examples for use in models
 
     Slightly adapted from HF
 
     Source B has tokenizer options stride and return_overflowing_tokens, with
-    different inequality logic (> start_char, < end_char etc)
+    the correct inequality logic (> start_char, < end_char). See B*
 
     Sources:
     A)
@@ -77,6 +89,9 @@ def preprocess_tokenize_function(examples, tokenizer, tensors_kind=None):
     B) Nov 22 2022
     https://huggingface.co/learn/nlp-course/chapter7/7?fw=pt#post-processing
     https://github.com/huggingface/course/blame/main/chapters/en/chapter7/7.mdx
+
+    B*) Diff made
+    https://github.com/huggingface/course/commit/4f1073b3e7730fd098bc62ed32d2c03317aae934
 
     """
     max_length = tokenizer.model_max_length
@@ -113,7 +128,7 @@ def preprocess_tokenize_function(examples, tokenizer, tensors_kind=None):
         context_start, context_end = find_context_start_end(sequence_ids)
 
         # If the answer is not fully inside the context, label it (0, 0)
-        # NOTE: sources disagree on logic, using more recent source
+        # NOTE: sources disagree on logic, using more recent source which seems correct
         if offset[context_start][0] > start_char or offset[context_end][1] < end_char:
             start_positions.append(0)
             end_positions.append(0)
