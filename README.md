@@ -105,3 +105,5 @@ machine learning on Apple silicon. See
 
 For original `BERT` model, see
 [github.com/google-research/bert](https://github.com/google-research/bert).
+
+_For more, see [resources.md](resources.md)_
