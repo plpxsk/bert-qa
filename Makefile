@@ -37,6 +37,11 @@ infer:
 		--question "How many programming languages does BLOOM support?" \
 		--context "BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages."
 
+perf:
+	python perf.py \
+		--model_str bert-base-uncased \
+		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz
+
 alts:
 	PYTHONPATH=. python alt/hf/train.py
 	PYTHONPATH=. python alt/hf/infer.py
