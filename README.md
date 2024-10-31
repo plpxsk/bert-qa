@@ -1,6 +1,7 @@
-# Fine tune BERT model for Q&A with Apple MLX
+# Fine tune BERT model for Q&A on MacBook
 
-Using `squad` Question and Answer dataset and Mac with Apple Silicon.
+Using `squad` Question and Answer dataset and Apple MLX (ML-Explore) for Mac
+with Apple Silicon.
 
 After fine-tune training the base BERT model, you can find answers to questions
 in your document.
