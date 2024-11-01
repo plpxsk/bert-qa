@@ -22,7 +22,7 @@ train:
 		--batch_size 10 \
 		--num_iters 1000 \
 		--steps_per_report 100 \
-		--steps_per_eval 500 \
+		--steps_per_eval 500
 
 testit:
 	python qa.py \
