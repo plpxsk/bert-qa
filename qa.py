@@ -76,45 +76,52 @@ def train(model, train_ds, valid_ds, loss_fn, args):
         optimizer.update(model, grads)
         return loss
 
-    train_iterator = batch_iterate(train_ds, batch_size=args.batch_size)
+    # train_iterator = batch_iterate(train_ds, batch_size=args.batch_size)
     losses = []
     tic = time.perf_counter()
 
-    for it, batch in zip(range(args.num_iters), train_iterator):
-        logging.info(f"Iteration {it}...")
-        input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
-            mx.array,
-            (batch['input_ids'], batch['token_type_ids'], batch['attention_mask'],
-             batch['start_positions'], batch['end_positions'])
-        )
+    n_epoch = 3
+    for epoch in range(n_epoch):
+    # for it, batch in zip(range(args.num_iters), train_iterator):
+        logging.info(f"Epoch {epoch+1} of {n_epoch}...")
+        for it, batch in enumerate(batch_iterate(train_ds, batch_size=args.batch_size)):
+            # print(it+1)
+            # print(len(batch['input_ids']))
 
-        loss = step(input_ids, token_type_ids, attention_mask, start_positions, end_positions)
+            logging.debug(f"Iteration {it+1}...")
+            input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
+                mx.array,
+                (batch['input_ids'], batch['token_type_ids'], batch['attention_mask'],
+                 batch['start_positions'], batch['end_positions'])
+            )
 
-        mx.eval(state)
-        losses.append(loss.item())
-        if (it + 1) % args.steps_per_report == 0:
-            logging.info("Running report...")
-            train_loss = np.mean(losses)
-            toc = time.perf_counter()
-            print(
-                f"Iter {it + 1}: "
-                f"Train loss {train_loss:.3f}, "
-                f"Train ppl {math.exp(train_loss):.3f}, "
-                f"It/sec {args.steps_per_report / (toc - tic):.3f}"
-            )
-            losses = []
-            tic = time.perf_counter()
-        if (it + 1) % args.steps_per_eval == 0:
-            logging.info("Checking validation loss...")
-            val_loss = eval_fn(valid_ds, model, batch_size=args.batch_size)
-            toc = time.perf_counter()
-            print(
-                f"Iter {it + 1}: "
-                f"Val loss {val_loss:.3f}, "
-                f"Val ppl {math.exp(val_loss):.3f}, "
-                f"Val took {(toc - tic):.3f}s, "
-            )
-            tic = time.perf_counter()
+            loss = step(input_ids, token_type_ids, attention_mask, start_positions, end_positions)
+
+            mx.eval(state)
+            losses.append(loss.item())
+            if (it + 1) % args.steps_per_report == 0:
+                logging.info("Running report...")
+                train_loss = np.mean(losses)
+                toc = time.perf_counter()
+                print(
+                    f"Iter (batch) {it + 1}: "
+                    f"Train loss {train_loss:.3f}, "
+                    f"Train ppl {math.exp(train_loss):.3f}, "
+                    f"It/sec {args.steps_per_report / (toc - tic):.3f}"
+                )
+                losses = []
+                tic = time.perf_counter()
+            if (it + 1) % args.steps_per_eval == 0:
+                logging.info("Checking validation loss...")
+                val_loss = eval_fn(valid_ds, model, batch_size=args.batch_size)
+                toc = time.perf_counter()
+                print(
+                    f"Iter (batch) {it + 1}: "
+                    f"Val loss {val_loss:.3f}, "
+                    f"Val ppl {math.exp(val_loss):.3f}, "
+                    f"Val took {(toc - tic):.3f}s, "
+                )
+                tic = time.perf_counter()
 
 
 def test(model, test_ds, batch_size):
