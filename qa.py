@@ -166,7 +166,8 @@ def loss_fn(model, input_ids, token_type_ids, attention_mask, start_positions,
         input_ids=input_ids,
         token_type_ids=token_type_ids,
         attention_mask=attention_mask)
-    loss = compute_loss(start_logits, end_logits, start_positions, end_positions, reduction="mean")
+    loss = compute_loss(start_logits, end_logits, start_positions, end_positions,
+                        reduction=reduction)
     return loss
 
 
