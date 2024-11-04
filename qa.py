@@ -27,7 +27,7 @@ def main(args):
     init_logger(args.log)
 
     if args.train:
-        print(f"Training for {args.num_iters} iters...")
+        print(f"Training for {args.n_epoch} epochs and {args.n_iters or "all"} iters...")
         train(model, train_ds, valid_ds, loss_fn, args)
         print(f"Saving fine-tuned weights to {args.weights_finetuned}")
         mx.savez(args.weights_finetuned, **dict(tree_flatten(model.trainable_parameters())))
@@ -76,17 +76,16 @@ def train(model, train_ds, valid_ds, loss_fn, args):
         optimizer.update(model, grads)
         return loss
 
-    # train_iterator = batch_iterate(train_ds, batch_size=args.batch_size)
     losses = []
     tic = time.perf_counter()
 
-    n_epoch = 3
-    for epoch in range(n_epoch):
-    # for it, batch in zip(range(args.num_iters), train_iterator):
-        logging.info(f"Epoch {epoch+1} of {n_epoch}...")
+    for epoch in range(args.n_epoch):
+        logging.info(f"Epoch {epoch+1} of {args.n_epoch}...")
+
         for it, batch in enumerate(batch_iterate(train_ds, batch_size=args.batch_size)):
-            # print(it+1)
-            # print(len(batch['input_ids']))
+
+            if it == args.n_iters:
+                break
 
             logging.debug(f"Iteration {it+1}...")
             input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
@@ -236,8 +235,8 @@ def build_parser():
                         help="Number of records to load for entire dataset. Default is None (full data)")  # noqa
     parser.add_argument("--batch_size", type=int, default=10, help="Minibatch size. Default is 10")
     parser.add_argument(
-        "--num_iters", type=int, default=100, help="Iterations to train for. Default is 100"
-    )
+        "--n_iters", type=none_or_int, default=None, help="Stop early at this number of iterations, at each epoch. Default is None")  # noqa
+    parser.add_argument("--n_epoch", type=int, default=1, help="Number of epochs to train for. Default is 1.")  # noqa
     parser.add_argument(
         "--steps_per_report",
         type=int,
