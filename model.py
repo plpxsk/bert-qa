@@ -13,6 +13,10 @@ class BertQA(nn.Module):
         self.num_labels = config.num_labels
         self.qa_output = nn.Linear(config.hidden_size, config.num_labels)
 
+    def load_weights_pretrain(self, path: str, strict=True):
+        # use strict=False to omit loading pooler.bias, pooler.weight
+        self.model.load_weights(path, strict=strict)
+
     def __call__(
             self,
             input_ids: mx.array,
@@ -61,7 +65,7 @@ def load_model_tokenizer(hf_model: str,
     model = BertQA(config)
     if weights_pretrain_path is not None:
         # strict=False to omit loading pooler.bias, pooler.weight
-        model.load_weights(weights_pretrain_path, strict=False)
+        model.load_weights_pretrain(weights_pretrain_path, strict=False)
     else:
         model.load_weights(weights_finetuned_path)
 
