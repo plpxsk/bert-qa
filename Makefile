@@ -1,28 +1,3 @@
-tmp:
-	python qa.py \
-		--train \
-		--test \
-		--model_str bert-base-uncased \
-		--weights_pretrain weights/bert-base-uncased.npz \
-		--weights_finetuned weights/tmp_fine_tuned.npz \
-		--dataset_size 100 \
-		--batch_size 10 \
-		--steps_per_report 10 \
-		--steps_per_eval 10 \
-		--log debug
-
-trainnew:
-	python qa.py \
-		--train \
-		--test \
-		--model_str bert-base-cased \
-		--weights_pretrain weights/bert-base-cased.npz \
-		--weights_finetuned weights/fine_tuned_1_epoch.npz \
-		--batch_size 32 \
-		--n_epoch 1 \
-		--steps_per_report 100 \
-		--steps_per_eval 900
-
 convert:
 	mkdir -p weights
 	python deps/convert.py --bert-model bert-base-cased --mlx-model weights/bert-base-cased.npz
@@ -41,18 +16,18 @@ train:
 	python qa.py \
 		--train \
 		--test \
-		--model_str bert-base-uncased \
-		--weights_pretrain weights/bert-base-uncased.npz \
-		--weights_finetuned weights/fine_tuned_full_data_1000_iter.npz \
-		--batch_size 10 \
-		--n_iters 1000 \
+		--model_str bert-base-cased \
+		--weights_pretrain weights/bert-base-cased.npz \
+		--weights_finetuned weights/final_fine_tuned_1_epoch.npz \
+		--batch_size 32 \
+		--n_epoch 1 \
 		--steps_per_report 100 \
-		--steps_per_eval 500
+		--steps_per_eval 900
 
 testit:
 	python qa.py \
 		--test \
-		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz \
+		--weights_finetuned weights/demo_fine_tuned.npz \
 		--dataset_size 1000
 
 infer:
@@ -65,7 +40,7 @@ infer:
 perf:
 	python perf.py \
 		--model_str bert-base-uncased \
-		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz
+		--weights_finetuned weights/demo_fine_tuned.npz
 
 alts:
 	PYTHONPATH=. python alt/hf/train.py
