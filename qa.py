@@ -235,7 +235,7 @@ def build_parser():
                         help="Number of records to load for entire dataset. Default is None (full data)")  # noqa
     parser.add_argument("--batch_size", type=int, default=10, help="Minibatch size. Default is 10")
     parser.add_argument(
-        "--n_iters", type=none_or_int, default=None, help="Stop early at this number of iterations, at each epoch. Default is None")  # noqa
+        "--n_iters", type=none_or_int, default=None, help="Stop early at this number of iterations, at each n_epoch. Default is None, which means number of iterations is set according to n_epoch and batch_size")  # noqa
     parser.add_argument("--n_epoch", type=int, default=1, help="Number of epochs to train for. Default is 1.")  # noqa
     parser.add_argument(
         "--steps_per_report",
