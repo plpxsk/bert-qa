@@ -150,13 +150,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--bert-model",
         type=str,
-        default="bert-base-uncased",
+        default="bert-base-cased",
         help="The huggingface name of the BERT model to save.",
     )
     parser.add_argument(
         "--mlx-model",
         type=str,
-        default="weights/bert-base-uncased.npz",
+        default="weights/bert-base-cased.npz",
         help="The path of the stored MLX BERT weights (npz file).",
     )
     parser.add_argument(

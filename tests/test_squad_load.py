@@ -16,7 +16,7 @@ class TestSquadLoad(unittest.TestCase):
         squad_split = "train[:" + str(rows) + "]"
         squad = load_dataset("squad", split=squad_split)
 
-        _, tokenizer = load_model_tokenizer_hf(hf_model="bert-base-uncased")
+        _, tokenizer = load_model_tokenizer_hf(hf_model="bert-base-cased")
 
         self.squad = squad
         self.tokenizer = tokenizer

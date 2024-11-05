@@ -8,8 +8,8 @@ from model import load_model_tokenizer
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
-        model_str = "bert-base-uncased"
-        weights_pretrain_path = "weights/bert-base-uncased.npz"
+        model_str = "bert-base-cased"
+        weights_pretrain_path = "weights/bert-base-cased.npz"
 
         model, tokenizer = load_model_tokenizer(hf_model=model_str,
                                                 weights_pretrain_path=weights_pretrain_path)

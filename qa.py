@@ -27,7 +27,7 @@ def main(args):
     init_logger(args.log)
 
     if args.train:
-        print(f"Training for {args.num_iters} iters...")
+        print(f"Training for {args.n_epoch} epochs and {args.n_iters or "all"} iters...")
         train(model, train_ds, valid_ds, loss_fn, args)
         print(f"Saving fine-tuned weights to {args.weights_finetuned}")
         mx.savez(args.weights_finetuned, **dict(tree_flatten(model.trainable_parameters())))
@@ -76,45 +76,51 @@ def train(model, train_ds, valid_ds, loss_fn, args):
         optimizer.update(model, grads)
         return loss
 
-    train_iterator = batch_iterate(train_ds, batch_size=args.batch_size)
     losses = []
     tic = time.perf_counter()
 
-    for it, batch in zip(range(args.num_iters), train_iterator):
-        logging.info(f"Iteration {it}...")
-        input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
-            mx.array,
-            (batch['input_ids'], batch['token_type_ids'], batch['attention_mask'],
-             batch['start_positions'], batch['end_positions'])
-        )
+    for epoch in range(args.n_epoch):
+        logging.info(f"Epoch {epoch+1} of {args.n_epoch}...")
 
-        loss = step(input_ids, token_type_ids, attention_mask, start_positions, end_positions)
+        for it, batch in enumerate(batch_iterate(train_ds, batch_size=args.batch_size)):
 
-        mx.eval(state)
-        losses.append(loss.item())
-        if (it + 1) % args.steps_per_report == 0:
-            logging.info("Running report...")
-            train_loss = np.mean(losses)
-            toc = time.perf_counter()
-            print(
-                f"Iter {it + 1}: "
-                f"Train loss {train_loss:.3f}, "
-                f"Train ppl {math.exp(train_loss):.3f}, "
-                f"It/sec {args.steps_per_report / (toc - tic):.3f}"
+            if it == args.n_iters:
+                break
+
+            logging.debug(f"Iteration {it+1}...")
+            input_ids, token_type_ids, attention_mask, start_positions, end_positions = map(
+                mx.array,
+                (batch['input_ids'], batch['token_type_ids'], batch['attention_mask'],
+                 batch['start_positions'], batch['end_positions'])
             )
-            losses = []
-            tic = time.perf_counter()
-        if (it + 1) % args.steps_per_eval == 0:
-            logging.info("Checking validation loss...")
-            val_loss = eval_fn(valid_ds, model, batch_size=args.batch_size)
-            toc = time.perf_counter()
-            print(
-                f"Iter {it + 1}: "
-                f"Val loss {val_loss:.3f}, "
-                f"Val ppl {math.exp(val_loss):.3f}, "
-                f"Val took {(toc - tic):.3f}s, "
-            )
-            tic = time.perf_counter()
+
+            loss = step(input_ids, token_type_ids, attention_mask, start_positions, end_positions)
+
+            mx.eval(state)
+            losses.append(loss.item())
+            if (it + 1) % args.steps_per_report == 0:
+                logging.info("Running report...")
+                train_loss = np.mean(losses)
+                toc = time.perf_counter()
+                print(
+                    f"Iter (batch) {it + 1}: "
+                    f"Train loss {train_loss:.3f}, "
+                    f"Train ppl {math.exp(train_loss):.3f}, "
+                    f"It/sec {args.steps_per_report / (toc - tic):.3f}"
+                )
+                losses = []
+                tic = time.perf_counter()
+            if (it + 1) % args.steps_per_eval == 0:
+                logging.info("Checking validation loss...")
+                val_loss = eval_fn(valid_ds, model, batch_size=args.batch_size)
+                toc = time.perf_counter()
+                print(
+                    f"Iter (batch) {it + 1}: "
+                    f"Val loss {val_loss:.3f}, "
+                    f"Val ppl {math.exp(val_loss):.3f}, "
+                    f"Val took {(toc - tic):.3f}s, "
+                )
+                tic = time.perf_counter()
 
 
 def test(model, test_ds, batch_size):
@@ -212,12 +218,12 @@ def build_parser():
     )
     parser.add_argument(
         "--model_str",
-        default="bert-base-uncased",
+        default="bert-base-cased",
         help="Name of pre-trained BERT model for tokenizer and parameters",
     )
     parser.add_argument(
         "--weights_pretrain",
-        default="weights/bert-base-uncased.npz",
+        default="weights/bert-base-cased.npz",
         help="The path to the local pre-trained MLX model weights",
     )
     parser.add_argument(
@@ -229,8 +235,8 @@ def build_parser():
                         help="Number of records to load for entire dataset. Default is None (full data)")  # noqa
     parser.add_argument("--batch_size", type=int, default=10, help="Minibatch size. Default is 10")
     parser.add_argument(
-        "--num_iters", type=int, default=100, help="Iterations to train for. Default is 100"
-    )
+        "--n_iters", type=none_or_int, default=None, help="Stop early at this number of iterations, at each n_epoch. Default is None, which means number of iterations is set according to n_epoch and batch_size")  # noqa
+    parser.add_argument("--n_epoch", type=int, default=1, help="Number of epochs to train for. Default is 1.")  # noqa
     parser.add_argument(
         "--steps_per_report",
         type=int,

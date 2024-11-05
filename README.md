@@ -24,52 +24,58 @@ Run a demo fine-tune training script with evaluation on a held-out set, via
 
 Then, run a demo inference with `make infer`.
 
-Both demos take only a few seconds. See "Demo" below.
+Both demos take only a few seconds. **See "Demo" below**.
 
 For more training, testing, inference, and performance code recipes, see
 [Makefile](Makefile).
 
 # Performance
 
-With 1000 iters (~1 hour) of training as per `make train`, the model seems to
-get quite good performance.
+_All results on MacBook with M1 Pro and 32 GB RAM_
 
-Results on the `squad` validation set, via `make perf`, in batches of 1000:
+Fine-tuning took ~3 hours, for a single pass through the `squad 1.1` training
+dataset, with pre-trained `bert-base-cased`, batch size of 32, and learning
+rate of 5e-5 as in `make train`.
+
+Results on the `squad` validation set, as per `make perf`, in batches of 1000:
 
 ```shell
-(.venv) bert-qa# make perf
-python perf.py \
-		--model_str bert-base-uncased \
-		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:24<00:00, 11.90it/s]
-{'exact_match': 73.7, 'f1': 80.74097983020103}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:29<00:00, 11.15it/s]
-{'exact_match': 64.1, 'f1': 74.99522715078461}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:28<00:00, 11.25it/s]
-{'exact_match': 66.7, 'f1': 76.48260749828081}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:26<00:00, 11.52it/s]
-{'exact_match': 70.0, 'f1': 79.48454740980043}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:25<00:00, 11.65it/s]
-{'exact_match': 64.2, 'f1': 76.3785847219809}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:25<00:00, 11.70it/s]
-{'exact_match': 72.7, 'f1': 81.2466704812215}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:23<00:00, 12.00it/s]
-{'exact_match': 63.2, 'f1': 72.27569857845408}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:24<00:00, 11.79it/s]
-{'exact_match': 64.3, 'f1': 73.15070496821069}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:25<00:00, 11.75it/s]
-{'exact_match': 62.6, 'f1': 73.709639718001}
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:26<00:00, 11.58it/s]
-{'exact_match': 64.7, 'f1': 74.43623684426922}
+(.venv) bert-qa# python perf.py --model_str bert-base-cased --weights_finetuned weights/final_fine_tuned_1_epoch.npz          
+100%|█████████████████████████████████████████| 1000/1000 [01:30<00:00, 11.06it/s]
+{'exact_match': 83.1, 'f1': 87.99243539054682}
+100%|█████████████████████████████████████████| 1000/1000 [01:32<00:00, 10.80it/s]
+{'exact_match': 78.0, 'f1': 86.65255557501183}
+100%|█████████████████████████████████████████| 1000/1000 [01:32<00:00, 10.79it/s]
+{'exact_match': 76.5, 'f1': 85.35768350029493}
+100%|█████████████████████████████████████████| 1000/1000 [01:31<00:00, 10.91it/s]
+{'exact_match': 81.5, 'f1': 87.90210248581334}
+100%|█████████████████████████████████████████| 1000/1000 [01:29<00:00, 11.15it/s]
+{'exact_match': 70.4, 'f1': 81.141941325805}
+100%|█████████████████████████████████████████| 1000/1000 [01:30<00:00, 11.00it/s]
+{'exact_match': 79.3, 'f1': 85.1800862625974}
+100%|█████████████████████████████████████████| 1000/1000 [01:27<00:00, 11.44it/s]
+{'exact_match': 69.5, 'f1': 77.68816921507332}
+100%|█████████████████████████████████████████| 1000/1000 [01:28<00:00, 11.35it/s]
+{'exact_match': 73.6, 'f1': 80.23080772684483}
+100%|█████████████████████████████████████████| 1000/1000 [01:28<00:00, 11.33it/s]
+{'exact_match': 68.5, 'f1': 78.53797196528662}
+100%|█████████████████████████████████████████| 1000/1000 [01:29<00:00, 11.23it/s]
+{'exact_match': 74.2, 'f1': 81.61097223228957}
 ```
 
-For reference, `DistilBERT` fine-tuned on SQuAD obtains 79.1 and 86.9 for those
-scores on the whole dataset. See [ref](https://arxiv.org/abs/1910.01108v2).
+Performance is in line with:
+
+  * original BERT: 80.8 EM and 88.5 F1 (base) and 84-87 EM and 91-93 F1 (large) [1]
+  * `DistilBERT`: 79.1 EM and 86.9 F1 [2]
+
+[1] See Table 2 for squad 1.1 results, for which "We fine-tune for 3 epochs
+with a learning rate of 5e-5 and a batch size of 32"
+[https://arxiv.org/abs/1810.04805](arxiv.org/abs/1810.04805)
+
+[2] [https://arxiv.org/abs/1910.01108v2](arxiv.org/abs/1910.01108v2)
 
 
 # Demo
-
-_On MacBook with M1 Pro and 32 GB RAM_
 
 ### Training
 
@@ -81,22 +87,28 @@ This should take only a few seconds, unless HuggingFace needs to download the
 python qa.py \
                 --train \
                 --test \
-                --model_str bert-base-uncased \
-                --weights_pretrain weights/bert-base-uncased.npz \
+                --model_str bert-base-cased \
+                --weights_pretrain weights/bert-base-cased.npz \
                 --weights_finetuned weights/demo_fine_tuned.npz \
                 --dataset_size 1000 \
-                --num_iters 10
+                --n_iters 30
 Loading datasets...
-Map: 100%|█████████| 800/800 [00:00<00:00, 4922.23 examples/s]
-Map: 100%|█████████| 100/100 [00:00<00:00, 1593.32 examples/s]
-Map: 100%|█████████| 100/100 [00:00<00:00, 4938.48 examples/s]
-Training for 10 iters...
-Iter 5: Train loss 5.474, Train ppl 238.462, It/sec 0.939
-Iter 10: Train loss 5.115, Train ppl 166.544, It/sec 0.949
-Iter 10: Val loss 4.958, Val ppl 142.341, Val took 3.414s, 
+Map: 100%|██████████████████████████████████| 800/800 [00:00<00:00, 5059.07 examples/s]
+Map: 100%|██████████████████████████████████| 100/100 [00:00<00:00, 1601.85 examples/s]
+Map: 100%|██████████████████████████████████| 100/100 [00:00<00:00, 5035.48 examples/s]
+Training for 1 epochs and 30 iters...
+Iter (batch) 5: Train loss 5.942, Train ppl 380.855, It/sec 0.881
+Iter (batch) 10: Train loss 4.851, Train ppl 127.869, It/sec 0.915
+Iter (batch) 10: Val loss 4.227, Val ppl 68.516, Val took 3.525s, 
+Iter (batch) 15: Train loss 4.137, Train ppl 62.625, It/sec 0.918
+Iter (batch) 20: Train loss 3.977, Train ppl 53.348, It/sec 0.908
+Iter (batch) 20: Val loss 3.551, Val ppl 34.850, Val took 3.536s, 
+Iter (batch) 25: Train loss 3.807, Train ppl 45.007, It/sec 0.916
+Iter (batch) 30: Train loss 3.380, Train ppl 29.374, It/sec 0.917
+Iter (batch) 30: Val loss 2.733, Val ppl 15.377, Val took 3.548s, 
 Saving fine-tuned weights to weights/demo_fine_tuned.npz
 Checking test loss...
-Test loss 4.918, Test ppl 136.747, Test eval took 3.465s
+Test loss 2.799, Test ppl 16.423, Test eval took 3.608s
 ```
 
 ### Inference
@@ -112,12 +124,12 @@ python qa.py \
                 --context "BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages."
 Running inference...
 # Context, Question:
-BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages.
+BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages. 
 
 How many programming languages does BLOOM support? 
 
-Answer:  languages and 13 programming
-Score:  4.9233527183532715 
+Answer:  176 billion
+Score:  10.352056980133057 
 ```
 
 ### Performance
@@ -126,11 +138,11 @@ This light demo model does poorly, as expected. Results on the first 1000
 validation records are representative:
 
 ```
-(.venv) bert-qa# python perf.py \
-		--model_str bert-base-uncased \
-		--weights_finetuned weights/demo_fine_tuned.npz
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:18<00:00, 12.80it/s]
-{'exact_match': 0.2, 'f1': 4.331335339379247}
+(.venv) bert-qa# python perf.py \ 
+>       --model_str bert-base-cased \
+>       --weights_finetuned weights/demo_fine_tuned.npz 
+100%|██████████████████████████████████████████| 1000/1000 [01:22<00:00, 12.15it/s]
+{'exact_match': 21.7, 'f1': 30.74530582015016}
 ```
 
 # Tests

@@ -1,33 +1,33 @@
 convert:
 	mkdir -p weights
-	python deps/convert.py --bert-model bert-base-uncased --mlx-model weights/bert-base-uncased.npz
+	python deps/convert.py --bert-model bert-base-cased --mlx-model weights/bert-base-cased.npz
 
 demo:
 	python qa.py \
 		--train \
 		--test \
-		--model_str bert-base-uncased \
-		--weights_pretrain weights/bert-base-uncased.npz \
+		--model_str bert-base-cased \
+		--weights_pretrain weights/bert-base-cased.npz \
 		--weights_finetuned weights/demo_fine_tuned.npz \
 		--dataset_size 1000 \
-		--num_iters 10
+		--n_iters 30
 
 train:
 	python qa.py \
 		--train \
 		--test \
-		--model_str bert-base-uncased \
-		--weights_pretrain weights/bert-base-uncased.npz \
-		--weights_finetuned weights/fine_tuned_full_data_1000_iter.npz \
-		--batch_size 10 \
-		--num_iters 1000 \
+		--model_str bert-base-cased \
+		--weights_pretrain weights/bert-base-cased.npz \
+		--weights_finetuned weights/final_fine_tuned_1_epoch.npz \
+		--batch_size 32 \
+		--n_epoch 1 \
 		--steps_per_report 100 \
-		--steps_per_eval 500
+		--steps_per_eval 900
 
 testit:
 	python qa.py \
 		--test \
-		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz \
+		--weights_finetuned weights/demo_fine_tuned.npz \
 		--dataset_size 1000
 
 infer:
@@ -39,8 +39,9 @@ infer:
 
 perf:
 	python perf.py \
-		--model_str bert-base-uncased \
-		--weights_finetuned weights/final_fine_tuned_full_data_1000_iter.npz
+		--model_str bert-base-cased \
+		--weights_finetuned weights/demo_fine_tuned.npz \
+		--batch_size 100
 
 alts:
 	PYTHONPATH=. python alt/hf/train.py

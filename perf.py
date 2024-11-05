@@ -36,9 +36,8 @@ def main(args):
     # (10570, 10626)
     # len(raw_squad_validation, len(processed_squad_validation)
 
-    batch_size = 1000
-    for s in range(0, len(raw_squad_validation), batch_size):
-        ids = range(s, s + batch_size)
+    for s in range(0, len(raw_squad_validation), args.batch_size):
+        ids = range(s, s + args.batch_size)
         batch = processed_squad_validation.select(ids)
 
         batch_model = batch.remove_columns(["example_id", "offset_mapping"])
@@ -167,14 +166,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Fine tune BERT for Q&A")
     parser.add_argument(
         "--model_str",
-        default="bert-base-uncased",
+        default="bert-base-cased",
         help="Name of pre-trained BERT model for tokenizer and parameters"
     )
     parser.add_argument(
         "--weights_finetuned",
-        default="weights/tmp-fine-tuned.npz",
+        default=" weights/demo_fine_tuned.npz",
         help="Check performance for model with these trained weights"
     )
+    parser.add_argument("--batch_size", type=int, default=1000,
+                        help="Size of validation set batch. Memory failures may occur for large batches. Default is 1000.")  # noqa
     args = parser.parse_args()
 
     main(args)
