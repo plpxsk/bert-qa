@@ -39,8 +39,9 @@ infer:
 
 perf:
 	python perf.py \
-		--model_str bert-base-uncased \
-		--weights_finetuned weights/demo_fine_tuned.npz
+		--model_str bert-base-cased \
+		--weights_finetuned weights/demo_fine_tuned.npz \
+		--batch_size 100
 
 alts:
 	PYTHONPATH=. python alt/hf/train.py

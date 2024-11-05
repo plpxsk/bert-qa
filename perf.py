@@ -166,12 +166,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Fine tune BERT for Q&A")
     parser.add_argument(
         "--model_str",
-        default="bert-base-uncased",
+        default="bert-base-cased",
         help="Name of pre-trained BERT model for tokenizer and parameters"
     )
     parser.add_argument(
         "--weights_finetuned",
-        default="weights/tmp-fine-tuned.npz",
+        default=" weights/demo_fine_tuned.npz",
         help="Check performance for model with these trained weights"
     )
     parser.add_argument("--batch_size", type=int, default=1000,

@@ -42,7 +42,7 @@ class BertQA(nn.Module):
         return start_logits, end_logits
 
 
-def load_model_tokenizer_hf(hf_model: str = "bert-base-uncased"):
+def load_model_tokenizer_hf(hf_model: str = "bert-base-cased"):
     from transformers import BertForQuestionAnswering, AutoTokenizer
     # https://huggingface.co/docs/transformers/v4.44.2/en/model_doc/bert#transformers.BertForQuestionAnswering
     model = BertForQuestionAnswering.from_pretrained(hf_model)
