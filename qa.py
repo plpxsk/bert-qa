@@ -218,12 +218,12 @@ def build_parser():
     )
     parser.add_argument(
         "--model_str",
-        default="bert-base-uncased",
+        default="bert-base-cased",
         help="Name of pre-trained BERT model for tokenizer and parameters",
     )
     parser.add_argument(
         "--weights_pretrain",
-        default="weights/bert-base-uncased.npz",
+        default="weights/bert-base-cased.npz",
         help="The path to the local pre-trained MLX model weights",
     )
     parser.add_argument(

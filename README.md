@@ -87,22 +87,28 @@ This should take only a few seconds, unless HuggingFace needs to download the
 python qa.py \
                 --train \
                 --test \
-                --model_str bert-base-uncased \
-                --weights_pretrain weights/bert-base-uncased.npz \
+                --model_str bert-base-cased \
+                --weights_pretrain weights/bert-base-cased.npz \
                 --weights_finetuned weights/demo_fine_tuned.npz \
                 --dataset_size 1000 \
-                --num_iters 10
+                --n_iters 30
 Loading datasets...
-Map: 100%|█████████| 800/800 [00:00<00:00, 4922.23 examples/s]
-Map: 100%|█████████| 100/100 [00:00<00:00, 1593.32 examples/s]
-Map: 100%|█████████| 100/100 [00:00<00:00, 4938.48 examples/s]
-Training for 10 iters...
-Iter 5: Train loss 5.474, Train ppl 238.462, It/sec 0.939
-Iter 10: Train loss 5.115, Train ppl 166.544, It/sec 0.949
-Iter 10: Val loss 4.958, Val ppl 142.341, Val took 3.414s, 
+Map: 100%|██████████████████████████████████| 800/800 [00:00<00:00, 5059.07 examples/s]
+Map: 100%|██████████████████████████████████| 100/100 [00:00<00:00, 1601.85 examples/s]
+Map: 100%|██████████████████████████████████| 100/100 [00:00<00:00, 5035.48 examples/s]
+Training for 1 epochs and 30 iters...
+Iter (batch) 5: Train loss 5.942, Train ppl 380.855, It/sec 0.881
+Iter (batch) 10: Train loss 4.851, Train ppl 127.869, It/sec 0.915
+Iter (batch) 10: Val loss 4.227, Val ppl 68.516, Val took 3.525s, 
+Iter (batch) 15: Train loss 4.137, Train ppl 62.625, It/sec 0.918
+Iter (batch) 20: Train loss 3.977, Train ppl 53.348, It/sec 0.908
+Iter (batch) 20: Val loss 3.551, Val ppl 34.850, Val took 3.536s, 
+Iter (batch) 25: Train loss 3.807, Train ppl 45.007, It/sec 0.916
+Iter (batch) 30: Train loss 3.380, Train ppl 29.374, It/sec 0.917
+Iter (batch) 30: Val loss 2.733, Val ppl 15.377, Val took 3.548s, 
 Saving fine-tuned weights to weights/demo_fine_tuned.npz
 Checking test loss...
-Test loss 4.918, Test ppl 136.747, Test eval took 3.465s
+Test loss 2.799, Test ppl 16.423, Test eval took 3.608s
 ```
 
 ### Inference
@@ -118,12 +124,12 @@ python qa.py \
                 --context "BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages."
 Running inference...
 # Context, Question:
-BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages.
+BLOOM has 176 billion parameters and can generate text in 46 natural languages and 13 programming languages. 
 
 How many programming languages does BLOOM support? 
 
-Answer:  languages and 13 programming
-Score:  4.9233527183532715 
+Answer:  176 billion
+Score:  10.352056980133057 
 ```
 
 ### Performance
@@ -132,11 +138,11 @@ This light demo model does poorly, as expected. Results on the first 1000
 validation records are representative:
 
 ```
-(.venv) bert-qa# python perf.py \
-		--model_str bert-base-uncased \
-		--weights_finetuned weights/demo_fine_tuned.npz
-100%|██████████████████████████████████████████████████████████████| 1000/1000 [01:18<00:00, 12.80it/s]
-{'exact_match': 0.2, 'f1': 4.331335339379247}
+(.venv) bert-qa# python perf.py \ 
+>       --model_str bert-base-cased \
+>       --weights_finetuned weights/demo_fine_tuned.npz 
+100%|██████████████████████████████████████████| 1000/1000 [01:22<00:00, 12.15it/s]
+{'exact_match': 21.7, 'f1': 30.74530582015016}
 ```
 
 # Tests
